@@ -27,3 +27,4 @@ class StudentAdmin(ImportExportModelAdmin):
     def mark_completed(self, request, queryset):
         updated = queryset.update(status='completed')
         self.message_user(request, f"{updated} student(s) marked as Completed.", messages.SUCCESS)
+

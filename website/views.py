@@ -197,3 +197,4 @@ def sitemap_xml_view(request):
         xml.append(f'  <url><loc>{base_url}/courses/{c.slug}/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>')
     xml.append('</urlset>')
     return HttpResponse("\n".join(xml), content_type="application/xml")
+

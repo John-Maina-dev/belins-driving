@@ -243,3 +243,4 @@ class Command(BaseCommand):
             self.stdout.write(f"  FAQ: {faq.question[:30]}...")
 
         self.stdout.write(self.style.SUCCESS("All demo data seeded successfully!"))
+

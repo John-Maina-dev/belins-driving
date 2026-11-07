@@ -79,3 +79,4 @@ class ContactMessageAdmin(admin.ModelAdmin):
     search_fields = ('name', 'email', 'phone', 'subject', 'message')
     list_editable = ('is_resolved',)
     readonly_fields = ('name', 'email', 'phone', 'subject', 'message', 'created_at')
+

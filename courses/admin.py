@@ -9,3 +9,4 @@ class CourseAdmin(ImportExportModelAdmin):
     search_fields = ('name', 'short_description', 'full_description')
     prepopulated_fields = {'slug': ('name',)}
     list_editable = ('fee', 'is_featured', 'is_active', 'order')
+

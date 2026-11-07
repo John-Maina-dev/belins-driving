@@ -25,3 +25,4 @@ class CourseDetailView(DetailView):
             is_active=True
         ).exclude(id=self.object.id).order_by('order')[:3]
         return context
+

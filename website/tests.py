@@ -163,3 +163,4 @@ class PublicWebsiteTests(TestCase):
         s2 = SiteSettings.load()
         self.assertEqual(s1.pk, s2.pk)
         self.assertEqual(SiteSettings.objects.count(), 1)
+

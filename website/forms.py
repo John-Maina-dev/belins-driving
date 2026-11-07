@@ -69,3 +69,4 @@ class EnrollmentForm(forms.ModelForm):
         if commit:
             student.save()
         return student
+

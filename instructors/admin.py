@@ -8,3 +8,4 @@ class InstructorAdmin(ImportExportModelAdmin):
     list_filter = ('is_featured', 'is_active')
     search_fields = ('full_name', 'title', 'license_categories', 'bio')
     list_editable = ('is_featured', 'is_active', 'order')
+
