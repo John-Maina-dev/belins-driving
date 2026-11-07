@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Site Management{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_subtitle %}Configure menu label, link destination, and display order{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-compass me-2"></i>Menu Item Details</h6>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Navigation Label <span class="text-danger">*</span></label>
+            {{ form.label }}
+            {% if form.label.errors %}<div class="text-danger small">{{ form.label.errors }}</div>{% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Target URL <span class="text-danger">*</span></label>
+            {{ form.url }}
+            {% if form.url.errors %}<div class="text-danger small">{{ form.url.errors }}</div>{% endif %}
+            <div class="form-text">e.g. <code>/courses/</code>, <code>/fees/</code>, or external <code>https://example.com</code></div>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-sm-4">
+              <label class="form-label fw-semibold">Display Order</label>
+              {{ form.order }}
+            </div>
+            <div class="col-sm-4 d-flex align-items-center pt-3">
+              <div class="form-check">
+                {{ form.is_active }}
+                <label class="form-check-label fw-semibold" for="{{ form.is_active.id_for_label }}">
+                  Active in Navbar
+                </label>
+              </div>
+            </div>
+            <div class="col-sm-4 d-flex align-items-center pt-3">
+              <div class="form-check">
+                {{ form.is_external }}
+                <label class="form-check-label fw-semibold" for="{{ form.is_external.id_for_label }}">
+                  New Tab (_blank)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'manage:navigation_list' %}" class="btn btn-secondary">
+              <i class="bi bi-arrow-left me-1"></i> Back to Menus
+            </a>
+            <button type="submit" class="btn btn-primary px-4">
+              <i class="bi bi-check-lg me-1"></i> Save Menu Item
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

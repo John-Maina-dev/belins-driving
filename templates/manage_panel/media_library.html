@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Media Library - Site Management{% endblock %}
+{% block page_title %}2. Media Library{% endblock %}
+{% block page_subtitle %}Manage school images, logos, hero visuals, and gallery uploads{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Upload New Media -->
+  <div class="col-lg-4">
+    <div class="card shadow-sm border-0 sticky-top" style="top: 90px; z-index: 10;">
+      <div class="card-header bg-white py-3 border-bottom">
+        <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-cloud-arrow-up me-2"></i>Upload New Image</h6>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Image Title <span class="text-danger">*</span></label>
+            {{ form.title }}
+            {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors }}</div>{% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Image File <span class="text-danger">*</span></label>
+            {{ form.image }}
+            {% if form.image.errors %}<div class="text-danger small mt-1">{{ form.image.errors }}</div>{% endif %}
+            <div class="form-text">JPG, PNG, WebP (Max 5MB). Filenames are safely sanitized.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Category / Tag</label>
+            {{ form.category }}
+            {% if form.category.errors %}<div class="text-danger small mt-1">{{ form.category.errors }}</div>{% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Alt Text (Accessibility & SEO)</label>
+            {{ form.alt_text }}
+            {% if form.alt_text.errors %}<div class="text-danger small mt-1">{{ form.alt_text.errors }}</div>{% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Display Order</label>
+            {{ form.order }}
+          </div>
+
+          <div class="form-check mb-4">
+            {{ form.is_featured }}
+            <label class="form-check-label fw-semibold" for="{{ form.is_featured.id_for_label }}">
+              Feature on Homepage
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-upload me-1"></i> Upload to Media Library
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Media Library Grid -->
+  <div class="col-lg-8">
+    <!-- Active Site Brand Assets -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-star-fill text-warning me-2"></i>Active Brand & Hero Assets</h6>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <!-- Light Logo -->
+          <div class="col-sm-4 text-center">
+            <div class="p-3 border rounded bg-light mb-2" style="min-height: 120px; display: flex; align-items: center; justify-content: center;">
+              {% if site_settings.logo_light %}
+                <img src="{{ site_settings.logo_light.url }}" alt="Light Logo" class="img-fluid" style="max-height: 80px;">
+              {% else %}
+                <span class="text-muted small"><i class="bi bi-image me-1"></i>No Light Logo</span>
+              {% endif %}
+            </div>
+            <div class="small fw-semibold">Main Logo (Light BG)</div>
+            <a href="{% url 'manage:branding' %}" class="small text-primary text-decoration-none">Change in Branding &rarr;</a>
+          </div>
+
+          <!-- Dark Logo -->
+          <div class="col-sm-4 text-center">
+            <div class="p-3 border rounded bg-dark mb-2" style="min-height: 120px; display: flex; align-items: center; justify-content: center;">
+              {% if site_settings.logo_dark %}
+                <img src="{{ site_settings.logo_dark.url }}" alt="Dark Logo" class="img-fluid" style="max-height: 80px;">
+              {% else %}
+                <span class="text-secondary small"><i class="bi bi-image me-1"></i>No Dark Logo</span>
+              {% endif %}
+            </div>
+            <div class="small fw-semibold">Navbar Logo (Dark BG)</div>
+            <a href="{% url 'manage:branding' %}" class="small text-primary text-decoration-none">Change in Branding &rarr;</a>
+          </div>
+
+          <!-- Hero Image -->
+          <div class="col-sm-4 text-center">
+            <div class="p-3 border rounded bg-light mb-2" style="min-height: 120px; display: flex; align-items: center; justify-content: center;">
+              {% if site_settings.hero_image %}
+                <img src="{{ site_settings.hero_image.url }}" alt="Hero Background" class="img-fluid rounded" style="max-height: 80px; object-fit: cover;">
+              {% else %}
+                <span class="text-muted small"><i class="bi bi-image me-1"></i>Default SVG Used</span>
+              {% endif %}
+            </div>
+            <div class="small fw-semibold">Hero Background</div>
+            <a href="{% url 'manage:homepage_content' %}" class="small text-primary text-decoration-none">Change in Homepage &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Uploaded Gallery & Media Items -->
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-images me-2"></i>Uploaded Gallery & Asset Library ({{ gallery_images.count }})</h6>
+        <a href="{% url 'manage:gallery_list' %}" class="btn btn-sm btn-outline-secondary">Manage Order &rarr;</a>
+      </div>
+      <div class="card-body">
+        {% if gallery_images %}
+        <div class="row g-3">
+          {% for item in gallery_images %}
+          <div class="col-md-4 col-sm-6">
+            <div class="card h-100 border shadow-none">
+              <div class="position-relative bg-light" style="height: 160px; overflow: hidden;">
+                <img src="{{ item.image.url }}" class="card-img-top w-100 h-100" style="object-fit: cover;" alt="{{ item.alt_text|default:item.title }}">
+                {% if item.is_featured %}
+                  <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-2">Featured</span>
+                {% endif %}
+              </div>
+              <div class="card-body p-2">
+                <h6 class="card-title text-truncate mb-1 fw-bold fs-6" title="{{ item.title }}">{{ item.title }}</h6>
+                <div class="d-flex justify-content-between align-items-center small text-muted">
+                  <span class="badge bg-light text-dark border">{{ item.get_category_display }}</span>
+                  <small>{{ item.created_at|date:"M d, Y" }}</small>
+                </div>
+              </div>
+              <div class="card-footer bg-white p-2 border-top d-flex justify-content-between align-items-center">
+                <a href="{{ item.image.url }}" target="_blank" class="btn btn-sm btn-light border py-0 px-2" title="View Full Image">
+                  <i class="bi bi-eye"></i>
+                </a>
+                <a href="{% url 'manage:gallery_edit' item.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2">
+                  <i class="bi bi-pencil"></i> Edit
+                </a>
+                <a href="{% url 'manage:gallery_delete' item.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2">
+                  <i class="bi bi-trash"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-images display-4 text-secondary mb-3 d-block"></i>
+          <h5>No Media Uploaded Yet</h5>
+          <p class="small">Upload course photos, training vehicles, graduation ceremonies, or facility images using the form on the left.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

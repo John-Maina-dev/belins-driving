@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Homepage Content - Site Management{% endblock %}
+{% block page_title %}3. Homepage Content & Sliders{% endblock %}
+{% block page_subtitle %}Manage hero banners, why choose us advantages, section headlines, stats counters, and CTA banner{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Left Column: Global Homepage Settings & Headlines -->
+  <div class="col-lg-7">
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-layout-text-window me-2"></i>Homepage Headlines & Hero Section</h6>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <!-- Hero Main -->
+          <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2 mb-3">Hero Section (Fallback Banner)</h6>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Hero Main Title</label>
+            {{ form.hero_title }}
+            {% if form.hero_title.errors %}<div class="text-danger small">{{ form.hero_title.errors }}</div>{% endif %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Hero Subtitle</label>
+            {{ form.hero_subtitle }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Hero Background Image</label>
+            {{ form.hero_image }}
+            {% if site_settings.hero_image %}
+              <div class="mt-2 small text-muted">Current: <a href="{{ site_settings.hero_image.url }}" target="_blank">{{ site_settings.hero_image.name }}</a></div>
+            {% endif %}
+          </div>
+
+          <!-- About Preview Section -->
+          <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2 mb-3 mt-4">Homepage "About Us" Preview Section</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Section Tag / Badge</label>
+              {{ form.about_section_tag }}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Section Main Title</label>
+              {{ form.about_section_title }}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">About Summary Text</label>
+            {{ form.about_section_text }}
+          </div>
+
+          <!-- Courses Preview Section -->
+          <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2 mb-3 mt-4">Homepage "Courses" Overview Section</h6>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Courses Section Title</label>
+            {{ form.courses_section_title }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Courses Section Subtitle / Description</label>
+            {{ form.courses_section_desc }}
+          </div>
+
+          <!-- Why Choose Us Intro -->
+          <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2 mb-3 mt-4">Homepage "Why Choose Us" Headings</h6>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Why Choose Title</label>
+            {{ form.why_choose_title }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Why Choose Subtitle / Description</label>
+            {{ form.why_choose_desc }}
+          </div>
+
+          <!-- Stats Counters -->
+          <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2 mb-3 mt-4">Homepage Numerical Stats Counters</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-sm-3 col-6">
+              <label class="form-label fw-semibold">Students</label>
+              {{ form.stat_students }}
+            </div>
+            <div class="col-sm-3 col-6">
+              <label class="form-label fw-semibold">Pass Rate</label>
+              {{ form.stat_pass_rate }}
+            </div>
+            <div class="col-sm-3 col-6">
+              <label class="form-label fw-semibold">Instructors</label>
+              {{ form.stat_certified_instructors }}
+            </div>
+            <div class="col-sm-3 col-6">
+              <label class="form-label fw-semibold">Years Exp.</label>
+              {{ form.stat_experience_years }}
+            </div>
+          </div>
+
+          <!-- Call to Action Banner -->
+          <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2 mb-3 mt-4">Homepage Bottom CTA Banner</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Badge Tag</label>
+              {{ form.cta_banner_badge }}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Main Heading</label>
+              {{ form.cta_banner_title }}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Description Text</label>
+            {{ form.cta_banner_desc }}
+          </div>
+          <div class="row g-3 mb-4">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Button Text</label>
+              {{ form.cta_banner_btn_text }}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Button Link URL</label>
+              {{ form.cta_banner_btn_link }}
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-check2-circle me-1"></i> Save Homepage Settings
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Hero Slides & Why Choose Us Items -->
+  <div class="col-lg-5">
+    <!-- Hero Slider Management -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <div>
+          <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-images text-primary me-2"></i>Hero Slider Slides</h6>
+          <small class="text-muted">If slides exist, hero renders as a rotating carousel</small>
+        </div>
+        <a href="{% url 'manage:slide_create' %}" class="btn btn-sm btn-primary">
+          <i class="bi bi-plus-lg me-1"></i> Add Slide
+        </a>
+      </div>
+      <div class="card-body p-0">
+        {% if slides %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 50px;">Order</th>
+                <th>Title</th>
+                <th>Status</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for slide in slides %}
+              <tr>
+                <td class="fw-bold text-center text-muted">{{ slide.order }}</td>
+                <td>
+                  <div class="fw-semibold">{{ slide.title }}</div>
+                  <small class="text-muted">{{ slide.subtitle|truncatewords:6 }}</small>
+                </td>
+                <td>
+                  {% if slide.is_active %}
+                    <span class="badge bg-success">Active</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Draft</span>
+                  {% endif %}
+                </td>
+                <td class="text-end">
+                  <a href="{% url 'manage:slide_edit' slide.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <a href="{% url 'manage:slide_delete' slide.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="p-4 text-center text-muted">
+          <i class="bi bi-card-image display-6 d-block mb-2 text-secondary"></i>
+          <p class="mb-0 small">No slider slides created yet. The default static hero banner is currently active.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Why Choose Us Items -->
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <div>
+          <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-award-fill text-warning me-2"></i>"Why Choose Us" Features</h6>
+          <small class="text-muted">Highlights and selling points on homepage</small>
+        </div>
+        <a href="{% url 'manage:why_choose_create' %}" class="btn btn-sm btn-primary">
+          <i class="bi bi-plus-lg me-1"></i> Add Point
+        </a>
+      </div>
+      <div class="card-body p-0">
+        {% if why_items %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 50px;">Icon</th>
+                <th>Advantage Feature</th>
+                <th style="width: 50px;">Order</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in why_items %}
+              <tr>
+                <td class="text-center">
+                  <div class="rounded p-2 bg-light text-primary d-inline-block">
+                    <i class="bi {{ item.icon_class|default:'bi-check-circle' }}"></i>
+                  </div>
+                </td>
+                <td>
+                  <div class="fw-semibold">{{ item.title }}</div>
+                  <small class="text-muted">{{ item.description|truncatewords:8 }}</small>
+                </td>
+                <td class="text-center text-muted">{{ item.order }}</td>
+                <td class="text-end">
+                  <a href="{% url 'manage:why_choose_edit' item.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <a href="{% url 'manage:why_choose_delete' item.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="p-4 text-center text-muted">
+          <i class="bi bi-shield-check display-6 d-block mb-2 text-secondary"></i>
+          <p class="mb-0 small">No feature points added yet.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,6 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
+from website.models import safe_upload_path, validate_image_file
 
 class Course(models.Model):
     CATEGORY_CHOICES = [
@@ -31,7 +32,7 @@ class Course(models.Model):
         help_text="Highlights included with this course"
     )
     icon_class = models.CharField(max_length=50, default="bi-car-front", help_text="Bootstrap Icons class name")
-    image = models.ImageField(upload_to='courses/', blank=True, null=True, help_text="Optional cover image")
+    image = models.ImageField(upload_to=safe_upload_path, validators=[validate_image_file], blank=True, null=True, help_text="Optional cover image")
     is_featured = models.BooleanField(default=True, help_text="Feature on homepage")
     is_active = models.BooleanField(default=True, help_text="Show on website")
     order = models.PositiveIntegerField(default=0, help_text="Display order")

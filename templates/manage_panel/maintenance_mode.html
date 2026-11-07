@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Maintenance Mode - Site Management{% endblock %}
+{% block page_title %}11. Maintenance Mode Switch{% endblock %}
+{% block page_subtitle %}Toggle public visitor access while keeping admin operations accessible{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card shadow-sm border-0 {% if site_settings.maintenance_mode %}border-warning border-top border-4{% endif %}">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-cone-striped me-2"></i>Public Maintenance Control</h6>
+      </div>
+      <div class="card-body">
+        {% if site_settings.maintenance_mode %}
+        <div class="alert alert-warning d-flex align-items-center mb-4">
+          <i class="bi bi-exclamation-triangle-fill fs-3 me-3 text-warning"></i>
+          <div>
+            <strong>MAINTENANCE MODE IS CURRENTLY ACTIVE!</strong>
+            <div class="small">Public visitors are receiving HTTP 503 Service Unavailable maintenance page. Only logged-in Admins have access.</div>
+          </div>
+        </div>
+        {% else %}
+        <div class="alert alert-success d-flex align-items-center mb-4">
+          <i class="bi bi-check-circle-fill fs-3 me-3 text-success"></i>
+          <div>
+            <strong>WEBSITE IS LIVE AND SERVING VISITORS</strong>
+            <div class="small">All public pages, enrollment forms, and course schedules are reachable normally.</div>
+          </div>
+        </div>
+        {% endif %}
+
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="form-check form-switch fs-5 mb-4 p-3 bg-light rounded border">
+            {{ form.maintenance_mode }}
+            <label class="form-check-label fw-bold ms-2" for="{{ form.maintenance_mode.id_for_label }}">
+              Enable Maintenance Mode
+            </label>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Public Notice Message</label>
+            {{ form.maintenance_message }}
+            <div class="form-text">Displayed on the 503 screen to visitors explaining the scheduled downtime.</div>
+          </div>
+
+          <div class="d-flex justify-content-end">
+            <button type="submit" class="btn {% if site_settings.maintenance_mode %}btn-danger{% else %}btn-warning{% endif %} px-4">
+              <i class="bi bi-power me-1"></i> Update Maintenance Status
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

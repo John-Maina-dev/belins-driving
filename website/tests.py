@@ -1,5 +1,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse
+from django.core.cache import cache
 from courses.models import Course
 from instructors.models import Instructor
 from students.models import Student
@@ -8,11 +9,13 @@ from website.forms import ContactForm, EnrollmentForm
 
 class PublicWebsiteTests(TestCase):
     def setUp(self):
+        cache.clear()
         self.client = Client()
 
-        # Seed site settings
+        # Seed site settings with maintenance mode disabled
         self.settings = SiteSettings.load()
         self.settings.school_name = "Belings Driving School"
+        self.settings.maintenance_mode = False
         self.settings.save()
 
         # Seed a test course

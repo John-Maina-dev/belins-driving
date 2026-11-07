@@ -40,6 +40,8 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
+    'accounts.apps.AccountsConfig',
+    'manage_panel.apps.ManagePanelConfig',
     'website.apps.WebsiteConfig',
     'courses.apps.CoursesConfig',
     'instructors.apps.InstructorsConfig',
@@ -57,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'driving_school.middleware.MaintenanceModeMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
 ]
 

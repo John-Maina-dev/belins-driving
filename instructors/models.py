@@ -1,4 +1,5 @@
 from django.db import models
+from website.models import safe_upload_path, validate_image_file
 
 class Instructor(models.Model):
     full_name = models.CharField(max_length=150)
@@ -6,7 +7,7 @@ class Instructor(models.Model):
     license_categories = models.CharField(max_length=100, default="Category A, B & C", help_text="Categories certified to teach")
     experience_years = models.PositiveIntegerField(default=5, help_text="Years of driving instruction experience")
     bio = models.TextField(help_text="Professional background and qualifications")
-    photo = models.ImageField(upload_to='instructors/', blank=True, null=True)
+    photo = models.ImageField(upload_to=safe_upload_path, validators=[validate_image_file], blank=True, null=True)
     phone = models.CharField(max_length=30, blank=True)
     email = models.EmailField(blank=True)
     ntsa_cert_number = models.CharField(max_length=100, blank=True, help_text="NTSA Instructor License / Certification ID")

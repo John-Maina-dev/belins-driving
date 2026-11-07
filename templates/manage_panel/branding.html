@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}Branding & Colors - Belings Driving School{% endblock %}
+{% block page_title %}Branding & Visual Identity{% endblock %}
+{% block page_subtitle %}Customize school logos, brand color variables, and site-wide typography{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="content-card">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <h5 class="fw-bold text-primary mb-3 pb-2 border-bottom">
+          <i class="bi bi-tag-fill text-warning me-1"></i> School Identity
+        </h5>
+        <div class="mb-3">
+          <label class="form-label small fw-bold">School Name</label>
+          {{ form.school_name }}
+          <small class="text-muted">Displayed in navbar, footer, page titles, and admin headings.</small>
+        </div>
+        <div class="mb-4">
+          <label class="form-label small fw-bold">Motto / Tagline</label>
+          {{ form.tagline }}
+        </div>
+
+        <h5 class="fw-bold text-primary mb-3 pb-2 border-bottom">
+          <i class="bi bi-image text-warning me-1"></i> School Logos & Favicon
+        </h5>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">Logo (Dark Backgrounds / Light Version)</label>
+            {{ form.logo_light }}
+            {% if site_settings.logo_light %}
+            <div class="mt-2 p-2 bg-dark rounded text-center">
+              <img src="{{ site_settings.logo_light.url }}" alt="Logo Light" style="max-height: 48px;">
+            </div>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">Logo (Light Backgrounds / Dark Version)</label>
+            {{ form.logo_dark }}
+            {% if site_settings.logo_dark %}
+            <div class="mt-2 p-2 bg-light border rounded text-center">
+              <img src="{{ site_settings.logo_dark.url }}" alt="Logo Dark" style="max-height: 48px;">
+            </div>
+            {% endif %}
+          </div>
+          <div class="col-12">
+            <label class="form-label small fw-bold">Favicon (.ico or .png, max 5 MB)</label>
+            {{ form.favicon }}
+            {% if site_settings.favicon %}
+            <div class="mt-2">
+              <img src="{{ site_settings.favicon.url }}" alt="Favicon" style="width: 32px; height: 32px;">
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <h5 class="fw-bold text-primary mb-3 pb-2 border-bottom">
+          <i class="bi bi-palette-fill text-warning me-1"></i> Brand Color Variables (Live Dynamic CSS)
+        </h5>
+        <p class="small text-muted mb-3">
+          Changes to these values immediately propagate to <code>--brand-primary</code>, <code>--brand-secondary</code>, and <code>--brand-accent</code> across the entire public site without requiring code edits or server restarts.
+        </p>
+
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <label class="form-label small fw-bold">Primary Brand Color</label>
+            <div class="d-flex align-items-center gap-2">
+              {{ form.brand_primary }}
+              <input type="text" class="form-control font-monospace" id="primaryHex" value="{{ site_settings.brand_primary }}" readonly>
+            </div>
+            <small class="text-muted">Navbars, headings, main cards</small>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-bold">Secondary Brand Color</label>
+            <div class="d-flex align-items-center gap-2">
+              {{ form.brand_secondary }}
+              <input type="text" class="form-control font-monospace" id="secondaryHex" value="{{ site_settings.brand_secondary }}" readonly>
+            </div>
+            <small class="text-muted">Call-to-action buttons, badges</small>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-bold">Accent / Success Color</label>
+            <div class="d-flex align-items-center gap-2">
+              {{ form.brand_accent }}
+              <input type="text" class="form-control font-monospace" id="accentHex" value="{{ site_settings.brand_accent }}" readonly>
+            </div>
+            <small class="text-muted">WhatsApp button, badges, status</small>
+          </div>
+        </div>
+
+        <h5 class="fw-bold text-primary mb-3 pb-2 border-bottom">
+          <i class="bi bi-fonts text-warning me-1"></i> Typography Selection
+        </h5>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">Headings Font</label>
+            {{ form.font_heading }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">Body Copy Font</label>
+            {{ form.font_body }}
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary px-4 py-2 fw-bold">
+          <i class="bi bi-save me-1"></i> Save Branding & Apply Changes
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Live Palette Preview Box -->
+  <div class="col-lg-4">
+    <div class="content-card sticky-top" style="top: 20px;">
+      <h6 class="fw-bold text-primary mb-3">Live Color Palette Preview</h6>
+      <div class="p-3 rounded-3 text-white mb-2 shadow-sm text-center" style="background-color: {{ site_settings.brand_primary }};">
+        <div class="fw-bold">Primary Brand Color</div>
+        <small class="opacity-75 font-monospace">{{ site_settings.brand_primary }}</small>
+      </div>
+      <div class="p-3 rounded-3 text-dark mb-2 shadow-sm text-center" style="background-color: {{ site_settings.brand_secondary }};">
+        <div class="fw-bold">Secondary Accent Color</div>
+        <small class="opacity-75 font-monospace">{{ site_settings.brand_secondary }}</small>
+      </div>
+      <div class="p-3 rounded-3 text-white mb-3 shadow-sm text-center" style="background-color: {{ site_settings.brand_accent }};">
+        <div class="fw-bold">Accent / WhatsApp Color</div>
+        <small class="opacity-75 font-monospace">{{ site_settings.brand_accent }}</small>
+      </div>
+
+      <div class="p-3 bg-light rounded-3 border small">
+        <div class="fw-bold mb-1"><i class="bi bi-info-circle text-primary me-1"></i> Instant Propagation</div>
+        When saved, these colors are updated in the singleton cache and rendered dynamically inside the public HTML <code>&lt;style&gt;</code> block, affecting the entire site instantly.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Sync color picker with text inputs
+  const pInput = document.querySelector('input[name="brand_primary"]');
+  const sInput = document.querySelector('input[name="brand_secondary"]');
+  const aInput = document.querySelector('input[name="brand_accent"]');
+
+  if (pInput) pInput.addEventListener('input', (e) => document.getElementById('primaryHex').value = e.target.value);
+  if (sInput) sInput.addEventListener('input', (e) => document.getElementById('secondaryHex').value = e.target.value);
+  if (aInput) aInput.addEventListener('input', (e) => document.getElementById('accentHex').value = e.target.value);
+</script>
+{% endblock %}

@@ -13,6 +13,7 @@ admin.site.index_title = "School Management & Administration"
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('manage/', include('manage_panel.urls', namespace='manage')),
     path('', include('website.urls', namespace='website')),
     path('courses/', include('courses.urls', namespace='courses')),
 ]

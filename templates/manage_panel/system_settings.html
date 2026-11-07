@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}System Operational Settings - Site Management{% endblock %}
+{% block page_title %}10. Operational System Settings{% endblock %}
+{% block page_subtitle %}Configure lesson rules, booking parameters, M-Pesa business numbers, and automated message templates{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-sliders me-2"></i>School Operations Configuration</h6>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+
+          <!-- Scheduling Rules -->
+          <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2 mb-3">Lesson & Scheduling Rules</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Default Lesson Duration (Minutes)</label>
+              {{ form.lesson_duration_minutes }}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Max Practical Lessons / Day per Student</label>
+              {{ form.max_lessons_per_day }}
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Cancellation Window (Hours Notice)</label>
+              {{ form.cancellation_window_hours }}
+              <div class="form-text">Minimum hours prior to session start required to cancel.</div>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">System Timezone</label>
+              {{ form.timezone }}
+            </div>
+          </div>
+
+          <!-- Currency & Payments -->
+          <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2 mb-3 mt-4">Currency & M-Pesa Payment Details</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Currency Code</label>
+              {{ form.currency_code }}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Currency Symbol</label>
+              {{ form.currency_symbol }}
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">M-Pesa Paybill / Till Number</label>
+              {{ form.mpesa_paybill }}
+              <div class="form-text">Displayed on invoices and payment instruction prompts.</div>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">M-Pesa Account Reference</label>
+              {{ form.mpesa_account_ref }}
+              <div class="form-text">e.g. Student National ID Number or Registration Code</div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Receipt & Invoice Header Information</label>
+            {{ form.receipt_header_details }}
+            <div class="form-text">Text printed at the top of PDF receipts and payment vouchers.</div>
+          </div>
+
+          <!-- Automated Notifications -->
+          <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2 mb-3 mt-4">Automated Message Templates</h6>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">SMS Lesson Reminder Template</label>
+            {{ form.sms_reminder_template }}
+            <div class="form-text">Available placeholders: <code>{student_name}</code>, <code>{date}</code>, <code>{time}</code>, <code>{instructor_name}</code></div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Email Welcome & Enrollment Template</label>
+            {{ form.email_welcome_template }}
+            <div class="form-text">Available placeholders: <code>{student_name}</code>, <code>{course_name}</code>, <code>{school_name}</code></div>
+          </div>
+
+          <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary px-4">
+              <i class="bi bi-check-lg me-1"></i> Save Operational Settings
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

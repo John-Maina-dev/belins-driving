@@ -1,12 +1,11 @@
 /* ==========================================================================
    BELINGS DRIVING SCHOOL - THEME CSS
-   Extracted & Inspired by Jodan College Driving School Reference
-   Brand Colors: --brand-primary, --brand-secondary, --brand-accent
+   Brand Colors & Visual Identity System
    ========================================================================== */
 
 :root {
   /* Brand Colors */
-  --brand-primary: #020381;         /* Deep Jodan Royal Navy */
+  --brand-primary: #020381;         /* Primary Brand Navy */
   --brand-primary-dark: #010252;    /* Darker tone for hovers & footers */
   --brand-primary-light: #1863dc;   /* Lighter vibrant blue */
   --brand-primary-soft: rgba(2, 3, 129, 0.08);

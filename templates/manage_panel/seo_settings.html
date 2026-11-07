@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}SEO Settings - Site Management{% endblock %}
+{% block page_title %}9. Search Engine Optimization (SEO){% endblock %}
+{% block page_subtitle %}Configure default meta titles, descriptions, Open Graph social share image, and indexing controls{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-search me-2"></i>SEO & Social Sharing Configuration</h6>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Default Meta Title Tag</label>
+            {{ form.meta_title }}
+            {% if form.meta_title.errors %}<div class="text-danger small">{{ form.meta_title.errors }}</div>{% endif %}
+            <div class="form-text">Displayed in browser tabs and Google search engine result titles.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Default Meta Description</label>
+            {{ form.meta_description }}
+            {% if form.meta_description.errors %}<div class="text-danger small">{{ form.meta_description.errors }}</div>{% endif %}
+            <div class="form-text">Search snippet summary (recommended: 150-160 characters).</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Open Graph (Social Share) Image</label>
+            {{ form.og_image }}
+            {% if form.og_image.errors %}<div class="text-danger small">{{ form.og_image.errors }}</div>{% endif %}
+            {% if site_settings.og_image %}
+              <div class="mt-2 small text-muted">Current: <a href="{{ site_settings.og_image.url }}" target="_blank">{{ site_settings.og_image.name }}</a></div>
+            {% endif %}
+            <div class="form-text">Preview image displayed when links are shared on WhatsApp, Facebook, or Twitter (1200x630px recommended).</div>
+          </div>
+
+          <div class="form-check mb-4 p-3 bg-light rounded border">
+            {{ form.indexing_enabled }}
+            <label class="form-check-label fw-semibold ms-2" for="{{ form.indexing_enabled.id_for_label }}">
+              Allow Search Engines to Index Website (robots.txt index, follow)
+            </label>
+            <div class="form-text ms-4">Uncheck to prevent Google and Bing from indexing the site during staging or development.</div>
+          </div>
+
+          <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary px-4">
+              <i class="bi bi-check-lg me-1"></i> Save SEO Settings
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

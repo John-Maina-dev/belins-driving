@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Messages Inbox - Site Management{% endblock %}
+{% block page_title %}Website Inquiries Inbox{% endblock %}
+{% block page_subtitle %}Customer messages submitted via the public contact form{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm border-0">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-envelope me-2"></i>Contact Messages ({{ contact_messages.count }})</h6>
+  </div>
+  <div class="card-body p-0">
+    {% if contact_messages %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 40px;">Status</th>
+            <th>Sender</th>
+            <th>Contact Details</th>
+            <th>Subject</th>
+            <th>Date Received</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for msg in contact_messages %}
+          <tr class="{% if not msg.is_read %}table-light fw-semibold{% endif %}">
+            <td class="text-center">
+              {% if not msg.is_read %}
+                <span class="badge bg-danger rounded-pill" title="Unread">&nbsp;</span>
+              {% else %}
+                <span class="badge bg-secondary rounded-pill" title="Read">&nbsp;</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="text-dark">{{ msg.name }}</div>
+            </td>
+            <td>
+              <div><i class="bi bi-envelope me-1 text-muted"></i>{{ msg.email }}</div>
+              <div><i class="bi bi-telephone me-1 text-muted"></i>{{ msg.phone }}</div>
+            </td>
+            <td>
+              <div class="text-primary">{{ msg.subject }}</div>
+              <small class="text-muted fw-normal">{{ msg.message|truncatewords:15 }}</small>
+            </td>
+            <td class="text-muted small">
+              {{ msg.created_at|date:"M d, Y H:i" }}
+            </td>
+            <td class="text-end">
+              <a href="{% url 'manage:message_toggle_read' msg.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Toggle Read/Unread">
+                {% if msg.is_read %}<i class="bi bi-envelope"></i>{% else %}<i class="bi bi-envelope-open"></i>{% endif %}
+              </a>
+              <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" data-bs-toggle="modal" data-bs-target="#msgModal{{ msg.pk }}">
+                <i class="bi bi-eye"></i> View
+              </button>
+              <a href="{% url 'manage:message_delete' msg.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2">
+                <i class="bi bi-trash"></i>
+              </a>
+
+              <!-- Message Modal -->
+              <div class="modal fade text-start" id="msgModal{{ msg.pk }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title fw-bold">{{ msg.subject }}</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="mb-3 p-3 bg-light rounded">
+                        <div><strong>From:</strong> {{ msg.name }}</div>
+                        <div><strong>Email:</strong> <a href="mailto:{{ msg.email }}">{{ msg.email }}</a></div>
+                        <div><strong>Phone:</strong> <a href="tel:{{ msg.phone }}">{{ msg.phone }}</a></div>
+                        <div><strong>Sent:</strong> {{ msg.created_at|date:"M d, Y H:i" }}</div>
+                      </div>
+                      <h6 class="fw-bold mb-2">Message Content:</h6>
+                      <p class="text-secondary" style="white-space: pre-line;">{{ msg.message }}</p>
+                    </div>
+                    <div class="modal-footer">
+                      <a href="mailto:{{ msg.email }}?subject=Re: {{ msg.subject }}" class="btn btn-primary">
+                        <i class="bi bi-reply-fill me-1"></i> Reply via Email
+                      </a>
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="p-5 text-center text-muted">
+      <i class="bi bi-inbox display-5 d-block mb-3 text-secondary"></i>
+      <h5>No Inquiries Yet</h5>
+      <p class="small">Messages sent via the public website contact form will appear here in real time.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
