@@ -38,3 +38,4 @@ class MaintenanceModeMiddleware:
             pass
 
         return self.get_response(request)
+

@@ -86,3 +86,4 @@ urlpatterns = [
     path('users/<int:pk>/edit/', views.user_edit_view, name='user_edit'),
     path('users/<int:pk>/delete/', views.user_delete_view, name='user_delete'),
 ]
+

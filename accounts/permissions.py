@@ -63,3 +63,4 @@ class SuperAdminRequiredMixin(AccessMixin):
         if not is_super_admin(request.user):
             raise PermissionDenied("Access denied. Super Administrator authorization required.")
         return super().dispatch(request, *args, **kwargs)
+
