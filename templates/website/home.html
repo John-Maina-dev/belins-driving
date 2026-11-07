@@ -1,0 +1,578 @@
+{% extends 'base_public.html' %}
+{% load static humanize %}
+
+{% block title %}Belings Driving School - NTSA Accredited Driving School in Kenya{% endblock %}
+
+{% block content %}
+
+<!-- =========================================================================
+     1. HERO AREA
+     ========================================================================= -->
+<section class="hero-section">
+  <div class="container position-relative" style="z-index: 2;">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7">
+        <div class="hero-badge">
+          <i class="bi bi-shield-check"></i> {{ site_settings.ntsa_accreditation_note|default:"NTSA Accredited Driving School" }}
+        </div>
+        <h1 class="hero-title">
+          {{ site_settings.hero_title|default:"Drive with Confidence. Pass Your Test on First Attempt." }}
+        </h1>
+        <p class="hero-subtitle">
+          {{ site_settings.hero_subtitle|default:"Learn safe, responsible, and defensive driving techniques with Kenya's certified instructors, modern dual-control training fleet, and flexible class timings." }}
+        </p>
+
+        <div class="d-flex flex-wrap gap-3 align-items-center">
+          <a href="{% url 'website:enroll' %}" class="btn btn-brand-secondary btn-lg px-4 py-3">
+            <i class="bi bi-person-plus-fill me-2"></i> Enroll Now
+          </a>
+          <a href="{% url 'website:courses' %}" class="btn btn-outline-light btn-lg px-4 py-3">
+            <i class="bi bi-compass me-2"></i> Explore Courses
+          </a>
+          <a href="https://wa.me/{{ site_settings.whatsapp_number|default:'254700123456' }}?text=Hello%20Belings%20Driving%20School,%20I%20would%20like%20to%20enroll."
+             class="btn btn-whatsapp btn-lg px-4 py-3 text-white" target="_blank" rel="noopener">
+            <i class="bi bi-whatsapp"></i> Chat on WhatsApp
+          </a>
+        </div>
+
+        <!-- Key Trust Highlights -->
+        <div class="hero-highlights">
+          <div class="hero-highlight-item">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>NTSA Smart DL Ready</span>
+          </div>
+          <div class="hero-highlight-item">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Free Interim License Assist</span>
+          </div>
+          <div class="hero-highlight-item">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Flexible Fee Installments</span>
+          </div>
+          <div class="hero-highlight-item">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Dual-Pedal Safe Fleet</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Card / Quick Application Card -->
+      <div class="col-lg-5">
+        <div class="card border-0 shadow-lg rounded-4 p-4 text-dark bg-white">
+          <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+            <h4 class="mb-0 text-primary font-heading" style="font-size: 1.25rem;">
+              <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Quick Admission
+            </h4>
+            <span class="badge bg-warning text-dark px-2 py-1 font-monospace">Intakes Open</span>
+          </div>
+          <p class="text-muted small mb-3">
+            Register in under 2 minutes. Choose your preferred category and schedule below:
+          </p>
+          <form action="{% url 'website:enroll' %}" method="get">
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Select Driving Category</label>
+              <select class="form-select" name="course" required>
+                <option value="">-- Choose Driving Category --</option>
+                {% for course in all_courses %}
+                <option value="{{ course.slug }}">{{ course.name }} (KES {{ course.fee|intcomma }})</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Preferred Shift</label>
+              <select class="form-select" name="shift">
+                <option value="morning">Morning Shift (8:00 AM - 11:00 AM)</option>
+                <option value="afternoon">Afternoon Shift (1:00 PM - 4:00 PM)</option>
+                <option value="evening">Evening Shift (4:30 PM - 7:00 PM)</option>
+                <option value="weekend">Weekend Intensive (Saturdays)</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-brand-primary w-100 py-2 fw-bold">
+              Proceed to Registration <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+          </form>
+          <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top small text-muted">
+            <span><i class="bi bi-headset text-primary me-1"></i> Helpline:</span>
+            <a href="tel:{{ site_settings.phone|default:'+254700123456' }}" class="fw-bold text-dark">{{ site_settings.phone|default:'+254 700 123 456' }}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     2. STATS COUNTERS
+     ========================================================================= -->
+<section class="stats-section">
+  <div class="container">
+    <div class="row g-4 text-center">
+      <div class="col-6 col-lg-3">
+        <div class="stat-item">
+          <div class="stat-number">{{ site_settings.stat_students|default:"12,500+" }}</div>
+          <div class="stat-label">Licensed Students Trained</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="stat-item">
+          <div class="stat-number">{{ site_settings.stat_pass_rate|default:"98.5%" }}</div>
+          <div class="stat-label">NTSA First-Time Pass Rate</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="stat-item">
+          <div class="stat-number">{{ site_settings.stat_experience_years|default:"12+" }}</div>
+          <div class="stat-label">Years of Excellence</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="stat-item">
+          <div class="stat-number">{{ site_settings.stat_certified_instructors|default:"24+" }}</div>
+          <div class="stat-label">NTSA Certified Instructors</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     3. SHORT ABOUT SECTION
+     ========================================================================= -->
+<section class="py-5 bg-white">
+  <div class="container py-lg-4">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <div class="position-relative">
+          <div class="p-3 bg-light rounded-4 border shadow-sm">
+            <div class="ratio ratio-16x9 bg-secondary rounded-3 d-flex align-items-center justify-content-center text-white" style="background: linear-gradient(135deg, #020381, #1863dc);">
+              <div class="text-center p-4">
+                <i class="bi bi-car-front-fill display-3 text-warning mb-2"></i>
+                <h3 class="text-white font-heading">Belings Driving Academy</h3>
+                <p class="mb-0 text-white-50">Modern Training Vehicles & Highway Defensive Modules</p>
+              </div>
+            </div>
+          </div>
+          <div class="position-absolute bottom-0 start-0 translate-middle-y bg-warning text-dark p-3 rounded-3 shadow-lg ms-3 d-none d-sm-block">
+            <div class="fw-bold font-monospace"><i class="bi bi-award-fill"></i> NTSA CERTIFIED</div>
+            <div class="small">100% Curriculum Compliance</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <span class="section-tag">About Belings Driving School</span>
+        <h2 class="section-title">Your Journey to Responsible, Confident Driving Starts Here</h2>
+        <p class="text-secondary lead">
+          {{ site_settings.about_story|truncatewords:45 }}
+        </p>
+        <p class="text-muted">
+          We pride ourselves on patient instruction, comprehensive mechanical basics, model town board drills, and rigorous road test preparation. Whether you are getting behind the wheel for the first time or upgrading your license class, our dedicated instructors guide you every step of the way.
+        </p>
+
+        <div class="row g-3 my-3">
+          <div class="col-sm-6">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-patch-check-fill text-success fs-5"></i>
+              <span class="fw-semibold">Dual-Control Safety Fleet</span>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-patch-check-fill text-success fs-5"></i>
+              <span class="fw-semibold">Model Town Board Mastery</span>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-patch-check-fill text-success fs-5"></i>
+              <span class="fw-semibold">First Aid & Road Ethics</span>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-patch-check-fill text-success fs-5"></i>
+              <span class="fw-semibold">Test Booking Assistance</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-3 mt-4">
+          <a href="{% url 'website:about' %}" class="btn btn-brand-primary">
+            Read Full Story <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+          <a href="{% url 'website:courses' %}" class="btn btn-outline-brand">
+            View License Classes
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     4. COURSES OVERVIEW CARDS
+     ========================================================================= -->
+<section class="py-5" style="background-color: var(--body-bg);">
+  <div class="container py-lg-4">
+    <div class="section-header">
+      <span class="section-tag">Our Driving Programs</span>
+      <h2 class="section-title">NTSA Approved Driving Courses</h2>
+      <p class="section-desc">
+        Comprehensive theoretical knowledge and hands-on practical hours tailored to equip you with defensive driving instincts.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      {% for course in featured_courses %}
+      <div class="col-md-6 col-lg-4">
+        <div class="course-card">
+          <div class="course-card-header">
+            <div class="course-icon-badge">
+              <i class="bi {{ course.icon_class|default:'bi-car-front' }}"></i>
+            </div>
+            <span class="course-category-badge">{{ course.category_display|default:course.get_license_category_display }}</span>
+          </div>
+          <div class="course-card-body">
+            <h4 class="font-heading mb-2" style="font-size: 1.25rem;">
+              <a href="{{ course.get_absolute_url }}">{{ course.name }}</a>
+            </h4>
+            <p class="text-muted small mb-3">
+              {{ course.short_description|truncatewords:20 }}
+            </p>
+
+            <div class="bg-light p-2 rounded small mb-3 d-flex justify-content-between text-secondary">
+              <span><i class="bi bi-clock me-1 text-primary"></i> {{ course.duration }}</span>
+              <span><i class="bi bi-speedometer2 me-1 text-primary"></i> {{ course.practical_hours }}h Practical</span>
+            </div>
+
+            <div class="d-flex align-items-baseline justify-content-between pt-2 border-top">
+              <div>
+                <span class="text-muted small d-block">Course Fee</span>
+                <span class="course-price-tag">KES {{ course.fee|intcomma }}</span>
+              </div>
+              <a href="{% url 'website:enroll' %}?course={{ course.slug }}" class="btn btn-brand-secondary btn-sm">
+                Enroll <i class="bi bi-chevron-right ms-1"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center py-5">
+        <p class="text-muted">Courses are currently being updated in the administrative catalog.</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="text-center mt-5">
+      <a href="{% url 'website:courses' %}" class="btn btn-brand-primary btn-lg px-4">
+        Browse All Courses & Categories <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     5. WHY CHOOSE US
+     ========================================================================= -->
+<section class="py-5 bg-white">
+  <div class="container py-lg-4">
+    <div class="section-header">
+      <span class="section-tag">Why Belings Driving School</span>
+      <h2 class="section-title">The Belings Advantage</h2>
+      <p class="section-desc">
+        We go beyond preparing you for a 15-minute test; we build confident, safety-conscious motorists equipped for Kenya's busy roadways.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-box">
+          <div class="feature-icon-wrapper">
+            <i class="bi bi-shield-lock-fill"></i>
+          </div>
+          <h4 class="font-heading fs-5 mb-2">100% NTSA Compliance</h4>
+          <p class="text-muted small mb-0">
+            Our curriculum and training materials are meticulously structured to comply with NTSA guidelines and driving test standards.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-box">
+          <div class="feature-icon-wrapper">
+            <i class="bi bi-people-fill"></i>
+          </div>
+          <h4 class="font-heading fs-5 mb-2">Certified Instructors</h4>
+          <p class="text-muted small mb-0">
+            Learn with patient, licensed professionals who understand nervous beginners and tailor their pacing to your learning speed.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-box">
+          <div class="feature-icon-wrapper">
+            <i class="bi bi-car-front-fill"></i>
+          </div>
+          <h4 class="font-heading fs-5 mb-2">Dual-Pedal Vehicles</h4>
+          <p class="text-muted small mb-0">
+            Practice in top-condition, dual-control manual and automatic cars that guarantee maximum safety during practical road drills.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-box">
+          <div class="feature-icon-wrapper">
+            <i class="bi bi-calendar2-week-fill"></i>
+          </div>
+          <h4 class="font-heading fs-5 mb-2">Flexible Timetables</h4>
+          <p class="text-muted small mb-0">
+            Balancing work or school? We offer early morning, midday, evening, and Saturday intensive batches tailored to your calendar.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     6. TESTIMONIALS SECTION
+     ========================================================================= -->
+<section class="py-5" style="background-color: var(--body-bg);">
+  <div class="container py-lg-4">
+    <div class="section-header">
+      <span class="section-tag">Student Reviews</span>
+      <h2 class="section-title">What Our Graduates Say</h2>
+      <p class="section-desc">
+        Thousands of successful drivers passed their NTSA test on their first attempt with Belings Driving School.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      {% for testimonial in testimonials %}
+      <div class="col-md-6 col-lg-4">
+        <div class="testimonial-card">
+          <div>
+            <div class="testimonial-stars">
+              {% for i in "12345"|make_list %}
+                <i class="bi bi-star-fill"></i>
+              {% endfor %}
+            </div>
+            <p class="testimonial-quote">
+              "{{ testimonial.quote }}"
+            </p>
+          </div>
+          <div class="testimonial-author border-top pt-3">
+            <div class="testimonial-avatar d-flex align-items-center justify-content-center text-primary fw-bold">
+              <i class="bi bi-person-fill fs-4"></i>
+            </div>
+            <div>
+              <h6 class="mb-0 fw-bold">{{ testimonial.name }}</h6>
+              <span class="text-muted small">{{ testimonial.course_taken }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-md-4">
+        <div class="testimonial-card">
+          <div>
+            <div class="testimonial-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
+            <p class="testimonial-quote">
+              "I was terrified of highway driving and roundabouts. Belings instructors were remarkably patient and taught me defensive skills that gave me confidence. Passed my test first attempt!"
+            </p>
+          </div>
+          <div class="testimonial-author border-top pt-3">
+            <div class="testimonial-avatar d-flex align-items-center justify-content-center text-primary"><i class="bi bi-person-fill fs-4"></i></div>
+            <div>
+              <h6 class="mb-0 fw-bold">Mercy Wanjiku</h6>
+              <span class="text-muted small">Category B Graduate</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="testimonial-card">
+          <div>
+            <div class="testimonial-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
+            <p class="testimonial-quote">
+              "Best driving school in Nairobi! The model town board classes were crystal clear, and the vehicle maintenance lectures were an unexpected bonus."
+            </p>
+          </div>
+          <div class="testimonial-author border-top pt-3">
+            <div class="testimonial-avatar d-flex align-items-center justify-content-center text-primary"><i class="bi bi-person-fill fs-4"></i></div>
+            <div>
+              <h6 class="mb-0 fw-bold">Brian Ochieng</h6>
+              <span class="text-muted small">Category C Commercial</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="testimonial-card">
+          <div>
+            <div class="testimonial-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
+            <p class="testimonial-quote">
+              "Flexible installment payment plan allowed me to finish my course without financial stress. The staff helped me with all TIMS / NTSA test booking."
+            </p>
+          </div>
+          <div class="testimonial-author border-top pt-3">
+            <div class="testimonial-avatar d-flex align-items-center justify-content-center text-primary"><i class="bi bi-person-fill fs-4"></i></div>
+            <div>
+              <h6 class="mb-0 fw-bold">Kevin Mutua</h6>
+              <span class="text-muted small">Category A Motorcycle</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     7. INSTRUCTORS PREVIEW
+     ========================================================================= -->
+<section class="py-5 bg-white">
+  <div class="container py-lg-4">
+    <div class="section-header">
+      <span class="section-tag">Expert Trainers</span>
+      <h2 class="section-title">Meet Our Certified Instructors</h2>
+      <p class="section-desc">
+        Licensed by the NTSA with over a decade of dedicated professional driving instruction.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      {% for instructor in instructors %}
+      <div class="col-md-6 col-lg-3">
+        <div class="instructor-card">
+          <div class="instructor-image d-flex align-items-center justify-content-center text-secondary">
+            {% if instructor.photo %}
+              <img src="{{ instructor.photo.url }}" alt="{{ instructor.full_name }}" class="w-100 h-100 object-fit-cover">
+            {% else %}
+              <div class="text-center p-4">
+                <i class="bi bi-person-badge display-3 text-primary mb-2"></i>
+                <div class="fw-bold">{{ instructor.title }}</div>
+              </div>
+            {% endif %}
+          </div>
+          <div class="instructor-info">
+            <h5 class="font-heading mb-1">{{ instructor.full_name }}</h5>
+            <p class="text-primary small fw-semibold mb-2">{{ instructor.title }}</p>
+            <span class="badge bg-light text-dark border small mb-2">{{ instructor.license_categories }}</span>
+            <p class="text-muted small mb-0">{{ instructor.experience_years }}+ Years Experience</p>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-md-6 col-lg-3">
+        <div class="instructor-card">
+          <div class="instructor-image d-flex align-items-center justify-content-center text-secondary">
+            <div class="text-center p-4">
+              <i class="bi bi-person-badge display-3 text-primary mb-2"></i>
+              <div class="fw-bold">Senior Instructor</div>
+            </div>
+          </div>
+          <div class="instructor-info">
+            <h5 class="font-heading mb-1">Samuel Mwangi</h5>
+            <p class="text-primary small fw-semibold mb-2">Chief Driving Instructor</p>
+            <span class="badge bg-light text-dark border small mb-2">Category A, B & C</span>
+            <p class="text-muted small mb-0">12+ Years Experience</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="instructor-card">
+          <div class="instructor-image d-flex align-items-center justify-content-center text-secondary">
+            <div class="text-center p-4">
+              <i class="bi bi-person-badge display-3 text-primary mb-2"></i>
+              <div class="fw-bold">Lead Specialist</div>
+            </div>
+          </div>
+          <div class="instructor-info">
+            <h5 class="font-heading mb-1">Grace Akinyi</h5>
+            <p class="text-primary small fw-semibold mb-2">Defensive Driving Specialist</p>
+            <span class="badge bg-light text-dark border small mb-2">Category B (Auto & Manual)</span>
+            <p class="text-muted small mb-0">8+ Years Experience</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="instructor-card">
+          <div class="instructor-image d-flex align-items-center justify-content-center text-secondary">
+            <div class="text-center p-4">
+              <i class="bi bi-person-badge display-3 text-primary mb-2"></i>
+              <div class="fw-bold">Commercial Trainer</div>
+            </div>
+          </div>
+          <div class="instructor-info">
+            <h5 class="font-heading mb-1">David Kiprono</h5>
+            <p class="text-primary small fw-semibold mb-2">Heavy Commercial & PSV Lead</p>
+            <span class="badge bg-light text-dark border small mb-2">Category C & D</span>
+            <p class="text-muted small mb-0">15+ Years Experience</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="instructor-card">
+          <div class="instructor-image d-flex align-items-center justify-content-center text-secondary">
+            <div class="text-center p-4">
+              <i class="bi bi-person-badge display-3 text-primary mb-2"></i>
+              <div class="fw-bold">Motorcycle Trainer</div>
+            </div>
+          </div>
+          <div class="instructor-info">
+            <h5 class="font-heading mb-1">Patrick Mutiso</h5>
+            <p class="text-primary small fw-semibold mb-2">Category A Riding Specialist</p>
+            <span class="badge bg-light text-dark border small mb-2">Category A1, A2 & A3</span>
+            <p class="text-muted small mb-0">9+ Years Experience</p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="text-center mt-4">
+      <a href="{% url 'website:instructors' %}" class="btn btn-outline-brand">
+        View All Instructors & Credentials <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     8. CALL-TO-ACTION BANNER
+     ========================================================================= -->
+<section class="py-5" style="background-color: var(--body-bg);">
+  <div class="container">
+    <div class="cta-banner">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-8">
+          <span class="badge bg-dark text-warning px-3 py-1 mb-2 font-monospace">LIMITED SLOTS AVAILABLE</span>
+          <h2 class="display-6 fw-bold mb-2 text-dark font-heading">
+            Ready to Get Behind the Wheel?
+          </h2>
+          <p class="lead mb-0 text-dark opacity-90">
+            Join thousands of successful drivers. Register today and enjoy affordable rates, installment options, and comprehensive NTSA test support.
+          </p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+          <div class="d-flex flex-column flex-sm-row flex-lg-column gap-2 justify-content-end">
+            <a href="{% url 'website:enroll' %}" class="btn btn-dark btn-lg fw-bold px-4 py-3 shadow">
+              <i class="bi bi-pencil-square me-2"></i> Start Online Enrollment
+            </a>
+            <a href="https://wa.me/{{ site_settings.whatsapp_number|default:'254700123456' }}?text=Hello%20Belings%20Driving%20School,%20I%20have%20questions%20about%20fees."
+               class="btn btn-success btn-lg fw-bold px-4 py-3" target="_blank" rel="noopener">
+              <i class="bi bi-whatsapp me-2"></i> Instant WhatsApp Inquiry
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

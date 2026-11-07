@@ -1,0 +1,123 @@
+{% extends 'base_public.html' %}
+{% load static %}
+
+{% block title %}Online Admission & Enrollment - {{ site_settings.school_name|default:"Belings Driving School" }}{% endblock %}
+
+{% block content %}
+<!-- Header Banner -->
+<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-dark));">
+  <div class="container py-3">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <span class="badge bg-warning text-dark px-3 py-1 mb-2 font-monospace">ONLINE REGISTRATION</span>
+        <h1 class="display-5 fw-bold text-white mb-2">Student Enrollment Form</h1>
+        <p class="lead mb-0 text-white-50">Begin your journey to acquiring a valid Kenyan NTSA Smart Driving License.</p>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <span class="badge bg-white text-primary p-2 fs-6 shadow-sm">
+          <i class="bi bi-clock-history me-1"></i> Intakes Open Every Monday
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Enrollment Form Section -->
+<section class="py-5 bg-white">
+  <div class="container py-lg-4" style="max-width: 900px;">
+    <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5 bg-white border">
+      <div class="text-center mb-4 pb-2 border-bottom">
+        <h3 class="font-heading text-primary mb-1">Driver Trainee Application</h3>
+        <p class="text-muted small">Please complete the required details accurately. Your submission will create a pending student profile for verification.</p>
+      </div>
+
+      <form method="post" action="{% url 'website:enroll' %}">
+        {% csrf_token %}
+
+        <!-- Personal Information Section -->
+        <h5 class="fw-bold text-primary mb-3 pb-2 border-bottom">
+          <i class="bi bi-person-fill text-warning me-1"></i> 1. Personal Information
+        </h5>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">First Name <span class="text-danger">*</span></label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">Last Name <span class="text-danger">*</span></label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">Email Address <span class="text-danger">*</span></label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">Phone Number (M-Pesa registered) <span class="text-danger">*</span></label>
+            {{ form.phone }}
+            {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-bold">National ID / Passport No. <span class="text-danger">*</span></label>
+            {{ form.id_number }}
+            {% if form.id_number.errors %}<div class="text-danger small mt-1">{{ form.id_number.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-bold">Date of Birth</label>
+            {{ form.date_of_birth }}
+            {% if form.date_of_birth.errors %}<div class="text-danger small mt-1">{{ form.date_of_birth.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-bold">Gender</label>
+            {{ form.gender }}
+            {% if form.gender.errors %}<div class="text-danger small mt-1">{{ form.gender.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <!-- Course & Scheduling Preferences -->
+        <h5 class="fw-bold text-primary mb-3 pb-2 border-bottom">
+          <i class="bi bi-car-front-fill text-warning me-1"></i> 2. Course & Schedule Selection
+        </h5>
+        <div class="row g-3 mb-4">
+          <div class="col-12">
+            <label class="form-label small fw-bold">Select Driving Course / Category <span class="text-danger">*</span></label>
+            {{ form.course }}
+            {% if form.course.errors %}<div class="text-danger small mt-1">{{ form.course.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">Preferred Shift / Timing</label>
+            {{ form.preferred_schedule }}
+            {% if form.preferred_schedule.errors %}<div class="text-danger small mt-1">{{ form.preferred_schedule.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">Preferred Training Branch</label>
+            {{ form.preferred_branch }}
+            {% if form.preferred_branch.errors %}<div class="text-danger small mt-1">{{ form.preferred_branch.errors }}</div>{% endif %}
+          </div>
+          <div class="col-12">
+            <label class="form-label small fw-bold">Notes or Prior Driving Experience</label>
+            {{ form.notes }}
+            <small class="text-muted">Mention if you already have prior experience, require refresher lessons, or have schedule constraints.</small>
+          </div>
+        </div>
+
+        <!-- Terms Agreement Notice -->
+        <div class="p-3 bg-light rounded-3 mb-4 border">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="1" id="termsAgree" required checked>
+            <label class="form-check-label small text-secondary" for="termsAgree">
+              I certify that all details submitted are accurate and that I meet the age and medical eligibility criteria required under Kenyan traffic regulations and NTSA standards.
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-brand-primary btn-lg w-100 fw-bold py-3 shadow">
+          <i class="bi bi-check-circle-fill me-2"></i> Submit Application & Reserve Seat
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

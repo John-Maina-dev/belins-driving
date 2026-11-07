@@ -1,0 +1,280 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <!-- SEO Meta Tags -->
+  <title>{% block title %}{{ site_settings.school_name|default:"Belings Driving School" }} - Professional Driver Training in Kenya{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ site_settings.tagline|default:"Belings Driving School is a premier NTSA-accredited driving institution offering category A, B, C training, defensive driving, and certified driver testing across Kenya." }}{% endblock %}">
+  <meta name="keywords" content="Driving school Kenya, Belings Driving School, NTSA driving license, Category B driving lessons, motorcycle license Nairobi, commercial driving classes, defensive driving Kenya">
+  <meta name="author" content="Belings Driving School">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph / Facebook / WhatsApp -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{% block og_title %}{{ site_settings.school_name|default:"Belings Driving School" }} - Drive with Confidence{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{{ site_settings.hero_subtitle|default:"NTSA-accredited driving training with modern fleet and professional certified instructors." }}{% endblock %}">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  <meta property="og:site_name" content="Belings Driving School">
+  {% if site_settings.logo %}
+  <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ site_settings.logo.url }}">
+  {% endif %}
+
+  <!-- Favicon placeholder -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20width=%22100%22%20height=%22100%22><text y=%22.9em%22 font-size=%2290%22>🚗</text></svg>">
+
+  <!-- Google Fonts: Inter & Roboto Slab -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Roboto+Slab:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 & Bootstrap Icons CSS (CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+  <!-- Custom Theme CSS -->
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- =========================================================================
+       TOPBAR
+       ========================================================================= -->
+  <div class="topbar d-none d-md-block">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+          <span><i class="bi bi-telephone-fill me-1 text-warning"></i> <a href="tel:{{ site_settings.phone|default:'+254700123456' }}">{{ site_settings.phone|default:'+254 700 123 456' }}</a></span>
+          <span><i class="bi bi-envelope-fill me-1 text-warning"></i> <a href="mailto:{{ site_settings.email|default:'info@belingsdriving.co.ke' }}">{{ site_settings.email|default:'info@belingsdriving.co.ke' }}</a></span>
+          <span><i class="bi bi-clock-fill me-1 text-warning"></i> {{ site_settings.opening_hours|default:'Mon-Sat: 7:00 AM - 6:30 PM' }}</span>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <span class="badge-ntsa"><i class="bi bi-shield-check me-1"></i> NTSA Accredited</span>
+          <div class="d-flex gap-2">
+            {% if site_settings.facebook_url %}<a href="{{ site_settings.facebook_url }}" target="_blank" rel="noopener" aria-label="Facebook"><i class="bi bi-facebook"></i></a>{% endif %}
+            {% if site_settings.twitter_url %}<a href="{{ site_settings.twitter_url }}" target="_blank" rel="noopener" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>{% endif %}
+            {% if site_settings.instagram_url %}<a href="{{ site_settings.instagram_url }}" target="_blank" rel="noopener" aria-label="Instagram"><i class="bi bi-instagram"></i></a>{% endif %}
+            {% if site_settings.youtube_url %}<a href="{{ site_settings.youtube_url }}" target="_blank" rel="noopener" aria-label="YouTube"><i class="bi bi-youtube"></i></a>{% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MAIN NAVBAR (Mobile-First Collapsing)
+       ========================================================================= -->
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-belings sticky-top">
+      <div class="container">
+        <!-- Brand / Logo -->
+        <a class="navbar-brand navbar-brand-wrapper" href="{% url 'website:home' %}">
+          {% if site_settings.logo %}
+            <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.school_name }}" class="navbar-brand-logo">
+          {% else %}
+            <!-- Placeholder Logo with spot to upload real logo via SiteSettings -->
+            <div class="navbar-brand-placeholder">
+              <i class="bi bi-steering-wheel"></i>
+            </div>
+            <div class="navbar-brand-text">
+              <h1>{{ site_settings.school_name|default:"Belings Driving School" }}</h1>
+              <span>NTSA Certified Academy</span>
+            </div>
+          {% endif %}
+        </a>
+
+        <!-- Mobile Toggle Button -->
+        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarBelingsNav" aria-controls="navbarBelingsNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar Links -->
+        <div class="collapse navbar-collapse" id="navbarBelingsNav">
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'website:home' %}">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'website:about' %}">About Us</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if 'courses' in request.path %}active{% endif %}" href="{% url 'website:courses' %}">Courses</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'fees' %}active{% endif %}" href="{% url 'website:fees' %}">Fees</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'instructors' %}active{% endif %}" href="{% url 'website:instructors' %}">Instructors</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'gallery' %}active{% endif %}" href="{% url 'website:gallery' %}">Gallery</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'faq' %}active{% endif %}" href="{% url 'website:faq' %}">FAQ</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}" href="{% url 'website:contact' %}">Contact</a>
+            </li>
+
+            <!-- Action Buttons: Enroll Now & Login -->
+            <li class="nav-item ms-lg-2 mt-2 mt-lg-0 d-flex gap-2 flex-wrap">
+              <a href="{% url 'website:enroll' %}" class="btn btn-brand-secondary">
+                <i class="bi bi-pencil-square me-1"></i> Enroll Now
+              </a>
+              <a href="/admin/login/?next=/admin/" class="btn btn-outline-brand" title="Staff & Student Portal Login">
+                <i class="bi bi-person-lock me-1"></i> Login
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- =========================================================================
+       FLASH MESSAGES
+       ========================================================================= -->
+  {% if messages %}
+  <div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm" role="alert">
+      <i class="bi bi-info-circle-fill me-2"></i> {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- =========================================================================
+       MAIN BODY CONTENT BLOCK
+       ========================================================================= -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- =========================================================================
+       FOOTER
+       ========================================================================= -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="row g-4">
+        <!-- About Belings Driving School -->
+        <div class="col-lg-4 col-md-6 footer-brand">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="navbar-brand-placeholder" style="width: 38px; height: 38px; font-size: 1.1rem;">
+              <i class="bi bi-steering-wheel"></i>
+            </div>
+            <h4 class="mb-0 text-white">{{ site_settings.school_name|default:"Belings Driving School" }}</h4>
+          </div>
+          <p class="text-secondary mb-3">
+            {{ site_settings.tagline|default:"Accredited driver training academy cultivating safe, skilled, and licensed drivers through modern pedagogy and defensive motoring skills." }}
+          </p>
+          <div class="p-2 bg-dark rounded d-inline-block text-warning small border border-secondary mb-3">
+            <i class="bi bi-patch-check-fill me-1"></i> {{ site_settings.ntsa_accreditation_note|default:"NTSA Accredited School" }}
+          </div>
+          <div class="footer-social-links">
+            {% if site_settings.facebook_url %}<a href="{{ site_settings.facebook_url }}" class="footer-social-btn" target="_blank" rel="noopener" aria-label="Facebook"><i class="bi bi-facebook"></i></a>{% endif %}
+            {% if site_settings.twitter_url %}<a href="{{ site_settings.twitter_url }}" class="footer-social-btn" target="_blank" rel="noopener" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>{% endif %}
+            {% if site_settings.instagram_url %}<a href="{{ site_settings.instagram_url }}" class="footer-social-btn" target="_blank" rel="noopener" aria-label="Instagram"><i class="bi bi-instagram"></i></a>{% endif %}
+            {% if site_settings.linkedin_url %}<a href="{{ site_settings.linkedin_url }}" class="footer-social-btn" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>{% endif %}
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="col-lg-2 col-md-6">
+          <h5 class="footer-heading">Quick Links</h5>
+          <ul class="footer-links">
+            <li><a href="{% url 'website:home' %}"><i class="bi bi-chevron-right small"></i> Home</a></li>
+            <li><a href="{% url 'website:about' %}"><i class="bi bi-chevron-right small"></i> About Us</a></li>
+            <li><a href="{% url 'website:courses' %}"><i class="bi bi-chevron-right small"></i> Courses</a></li>
+            <li><a href="{% url 'website:fees' %}"><i class="bi bi-chevron-right small"></i> Course Fees</a></li>
+            <li><a href="{% url 'website:instructors' %}"><i class="bi bi-chevron-right small"></i> Instructors</a></li>
+            <li><a href="{% url 'website:gallery' %}"><i class="bi bi-chevron-right small"></i> Photo Gallery</a></li>
+            <li><a href="{% url 'website:faq' %}"><i class="bi bi-chevron-right small"></i> FAQs</a></li>
+            <li><a href="{% url 'website:contact' %}"><i class="bi bi-chevron-right small"></i> Contact Us</a></li>
+          </ul>
+        </div>
+
+        <!-- License Categories -->
+        <div class="col-lg-3 col-md-6">
+          <h5 class="footer-heading">License Categories</h5>
+          <ul class="footer-links">
+            <li><a href="{% url 'website:courses' %}?category=A"><i class="bi bi-chevron-right small"></i> Category A (Motorcycles)</a></li>
+            <li><a href="{% url 'website:courses' %}?category=B"><i class="bi bi-chevron-right small"></i> Category B (Light Vehicles)</a></li>
+            <li><a href="{% url 'website:courses' %}?category=C"><i class="bi bi-chevron-right small"></i> Category C (Commercial Trucks)</a></li>
+            <li><a href="{% url 'website:courses' %}?category=D"><i class="bi bi-chevron-right small"></i> Category D (PSV Matatu & Buses)</a></li>
+            <li><a href="{% url 'website:courses' %}?category=R"><i class="bi bi-chevron-right small"></i> Refresher & Defensive Driving</a></li>
+          </ul>
+          <div class="mt-4">
+            <a href="{% url 'website:enroll' %}" class="btn btn-brand-secondary btn-sm w-100">
+              <i class="bi bi-award me-1"></i> Apply for Admission
+            </a>
+          </div>
+        </div>
+
+        <!-- Contact & Working Hours -->
+        <div class="col-lg-3 col-md-6">
+          <h5 class="footer-heading">Contact & Location</h5>
+          <div class="footer-contact-item">
+            <i class="bi bi-geo-alt-fill"></i>
+            <span>{{ site_settings.address|default:"Belings Towers, Moi Avenue, Nairobi, Kenya" }}</span>
+          </div>
+          <div class="footer-contact-item">
+            <i class="bi bi-telephone-fill"></i>
+            <div>
+              <a href="tel:{{ site_settings.phone|default:'+254700123456' }}">{{ site_settings.phone|default:'+254 700 123 456' }}</a>
+              {% if site_settings.phone_secondary %}
+              <br><a href="tel:{{ site_settings.phone_secondary }}">{{ site_settings.phone_secondary }}</a>
+              {% endif %}
+            </div>
+          </div>
+          <div class="footer-contact-item">
+            <i class="bi bi-envelope-fill"></i>
+            <a href="mailto:{{ site_settings.email|default:'info@belingsdriving.co.ke' }}">{{ site_settings.email|default:'info@belingsdriving.co.ke' }}</a>
+          </div>
+          <div class="footer-contact-item">
+            <i class="bi bi-clock-history"></i>
+            <span>{{ site_settings.opening_hours|default:"Mon - Fri: 7:00 AM - 6:30 PM | Sat: 8:00 AM - 4:00 PM" }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Copyright & Bottom Bar -->
+      <div class="footer-bottom d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+        <div>
+          &copy; {% now "Y" %} {{ site_settings.school_name|default:"Belings Driving School" }}. All Rights Reserved.
+        </div>
+        <div class="d-flex gap-3">
+          <a href="{% url 'website:about' %}" class="text-secondary small">About</a>
+          <a href="{% url 'website:fees' %}" class="text-secondary small">Fee Structure</a>
+          <a href="{% url 'website:faq' %}" class="text-secondary small">FAQ</a>
+          <a href="{% url 'website:contact' %}" class="text-secondary small">Get in Touch</a>
+          <a href="/admin/" class="text-secondary small">Staff Login</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- =========================================================================
+       FLOATING WHATSAPP CHAT BUTTON
+       ========================================================================= -->
+  <a href="https://wa.me/{{ site_settings.whatsapp_number|default:'254700123456' }}?text=Hello%20Belings%20Driving%20School,%20I%20would%20like%20to%20inquire%20about%20your%20driving%20courses."
+     class="floating-whatsapp"
+     target="_blank"
+     rel="noopener"
+     aria-label="Chat on WhatsApp"
+     title="Chat with Belings Driving School on WhatsApp">
+    <i class="bi bi-whatsapp"></i>
+  </a>
+
+  <!-- Bootstrap 5 Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

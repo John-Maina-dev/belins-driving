@@ -1,0 +1,120 @@
+{% extends 'base_public.html' %}
+{% load static humanize %}
+
+{% block title %}Driving Courses & License Categories - {{ site_settings.school_name|default:"Belings Driving School" }}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-dark));">
+  <div class="container py-3">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <span class="badge bg-warning text-dark px-3 py-1 mb-2 font-monospace">NTSA ACCREDITED CURRICULUM</span>
+        <h1 class="display-5 fw-bold text-white mb-2">Our Driving Courses</h1>
+        <p class="lead mb-0 text-white-50">Select your license category and begin professional hands-on driver training.</p>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{% url 'website:fees' %}" class="btn btn-outline-light btn-lg">
+          <i class="bi bi-table me-1"></i> View Fee Structure
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Courses Section with Category Filter -->
+<section class="py-5" style="background-color: var(--body-bg);">
+  <div class="container py-lg-3">
+
+    <!-- Category Filter Pills -->
+    <div class="d-flex flex-wrap gap-2 justify-content-center mb-5">
+      <a href="{% url 'website:courses' %}" class="btn btn-sm {% if not selected_category %}btn-brand-primary{% else %}btn-outline-secondary bg-white{% endif %} px-3 py-2">
+        All Categories
+      </a>
+      {% for code, label in categories %}
+      <a href="{% url 'website:courses' %}?category={{ code }}"
+         class="btn btn-sm {% if selected_category == code %}btn-brand-primary{% else %}btn-outline-secondary bg-white{% endif %} px-3 py-2">
+        {{ label|truncatechars:35 }}
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- Course Cards Grid -->
+    <div class="row g-4">
+      {% for course in courses %}
+      <div class="col-md-6 col-lg-4">
+        <div class="course-card">
+          <div class="course-card-header">
+            <div class="course-icon-badge">
+              <i class="bi {{ course.icon_class|default:'bi-car-front' }}"></i>
+            </div>
+            <span class="course-category-badge">{{ course.category_display|default:course.get_license_category_display }}</span>
+          </div>
+          <div class="course-card-body">
+            <h4 class="font-heading mb-2" style="font-size: 1.25rem;">
+              <a href="{{ course.get_absolute_url }}">{{ course.name }}</a>
+            </h4>
+            <p class="text-muted small mb-3">
+              {{ course.short_description|truncatewords:22 }}
+            </p>
+
+            <div class="bg-light p-3 rounded-3 small mb-3 text-secondary">
+              <div class="d-flex justify-content-between mb-1">
+                <span><i class="bi bi-calendar3 me-1 text-primary"></i> Duration:</span>
+                <strong class="text-dark">{{ course.duration }}</strong>
+              </div>
+              <div class="d-flex justify-content-between mb-1">
+                <span><i class="bi bi-speedometer2 me-1 text-primary"></i> Practical Lessons:</span>
+                <strong class="text-dark">{{ course.practical_hours }} Hours</strong>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span><i class="bi bi-book me-1 text-primary"></i> Theory Classes:</span>
+                <strong class="text-dark">{{ course.theory_hours }} Hours</strong>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-baseline justify-content-between pt-2 border-top">
+              <div>
+                <span class="text-muted small d-block">Course Tuition</span>
+                <span class="course-price-tag">KES {{ course.fee|intcomma }}</span>
+              </div>
+              <div class="d-flex gap-2">
+                <a href="{{ course.get_absolute_url }}" class="btn btn-outline-brand btn-sm">
+                  Details
+                </a>
+                <a href="{% url 'website:enroll' %}?course={{ course.slug }}" class="btn btn-brand-secondary btn-sm">
+                  Enroll <i class="bi bi-arrow-right"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center py-5">
+        <i class="bi bi-info-circle display-4 text-muted mb-3 d-block"></i>
+        <h4>No courses found in this category.</h4>
+        <p class="text-muted">Please choose a different category or view all courses.</p>
+        <a href="{% url 'website:courses' %}" class="btn btn-brand-primary mt-2">View All Courses</a>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Need Guidance Banner -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mt-5 bg-white text-center">
+      <h4 class="font-heading text-primary mb-2">Unsure Which License Category Fits You?</h4>
+      <p class="text-muted max-w-600 mx-auto mb-3">
+        Our experienced admissions advisors can assess your goals, age, and career requirements to recommend the best course option.
+      </p>
+      <div>
+        <a href="{% url 'website:contact' %}" class="btn btn-brand-primary me-2">Speak to an Advisor</a>
+        <a href="https://wa.me/{{ site_settings.whatsapp_number|default:'254700123456' }}?text=Hello%20Belings%20Driving%20School,%20which%20course%20should%20I%20choose?"
+           class="btn btn-whatsapp text-white" target="_blank" rel="noopener">
+          <i class="bi bi-whatsapp"></i> WhatsApp Us
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

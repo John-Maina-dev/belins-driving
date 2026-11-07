@@ -1,0 +1,169 @@
+{% extends 'base_public.html' %}
+{% load static %}
+
+{% block title %}Photo Gallery - {{ site_settings.school_name|default:"Belings Driving School" }}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-dark));">
+  <div class="container py-3">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <span class="badge bg-warning text-dark px-3 py-1 mb-2 font-monospace">CAMPUS LIFE & FLEET</span>
+        <h1 class="display-5 fw-bold text-white mb-2">Belings School Gallery</h1>
+        <p class="lead mb-0 text-white-50">Explore our training fleet, modern classroom facilities, and student graduation milestones.</p>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{% url 'website:enroll' %}" class="btn btn-brand-secondary btn-lg">
+          <i class="bi bi-pencil-square me-1"></i> Enroll With Us
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Gallery Grid -->
+<section class="py-5" style="background-color: var(--body-bg);">
+  <div class="container py-lg-3">
+
+    <!-- Category Filter Tabs -->
+    <div class="d-flex flex-wrap gap-2 justify-content-center mb-5">
+      <a href="{% url 'website:gallery' %}" class="btn btn-sm {% if not selected_category %}btn-brand-primary{% else %}btn-outline-secondary bg-white{% endif %} px-3 py-2">
+        All Photos
+      </a>
+      {% for code, label in categories %}
+      <a href="{% url 'website:gallery' %}?category={{ code }}"
+         class="btn btn-sm {% if selected_category == code %}btn-brand-primary{% else %}btn-outline-secondary bg-white{% endif %} px-3 py-2">
+        {{ label }}
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- Image Grid -->
+    <div class="row g-4">
+      {% for item in images %}
+      <div class="col-sm-6 col-md-4 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 gallery-thumbnail"
+             data-bs-toggle="modal"
+             data-bs-target="#lightboxModal"
+             data-bs-img="{% if item.image %}{{ item.image.url }}{% endif %}"
+             data-bs-title="{{ item.title }}"
+             data-bs-caption="{{ item.caption|default:item.title }}">
+          <div class="position-relative">
+            {% if item.image %}
+              <img src="{{ item.image.url }}" alt="{{ item.title }}" class="w-100 object-fit-cover" style="height: 220px;" loading="lazy">
+            {% else %}
+              <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 220px;">
+                <i class="bi bi-image fs-1"></i>
+              </div>
+            {% endif %}
+            <span class="position-absolute top-0 end-0 m-2 badge bg-dark bg-opacity-75">
+              {{ item.get_category_display }}
+            </span>
+          </div>
+          <div class="p-3 bg-white">
+            <h6 class="fw-bold mb-1 text-truncate text-dark">{{ item.title }}</h6>
+            <small class="text-muted d-block text-truncate">{{ item.caption|default:item.get_category_display }}</small>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <!-- Placeholder images if admin hasn't uploaded photos yet -->
+      <div class="col-sm-6 col-md-4 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+          <div class="bg-primary text-white d-flex flex-column align-items-center justify-content-center p-4 text-center" style="height: 220px; background: linear-gradient(135deg, #020381, #1863dc) !important;">
+            <i class="bi bi-car-front display-4 text-warning mb-2"></i>
+            <h6 class="mb-0 text-white font-heading">Dual Control Fleet</h6>
+          </div>
+          <div class="p-3 bg-white">
+            <h6 class="fw-bold mb-1 text-dark">Category B Light Vehicles</h6>
+            <small class="text-muted">Modern manual and automatic saloon cars</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-4 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+          <div class="bg-primary text-white d-flex flex-column align-items-center justify-content-center p-4 text-center" style="height: 220px; background: linear-gradient(135deg, #010252, #020381) !important;">
+            <i class="bi bi-diagram-3 display-4 text-warning mb-2"></i>
+            <h6 class="mb-0 text-white font-heading">Model Town Board</h6>
+          </div>
+          <div class="p-3 bg-white">
+            <h6 class="fw-bold mb-1 text-dark">Theory Classrooms</h6>
+            <small class="text-muted">Interactive roundabout and right-of-way boards</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-4 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+          <div class="bg-primary text-white d-flex flex-column align-items-center justify-content-center p-4 text-center" style="height: 220px; background: linear-gradient(135deg, #1863dc, #020381) !important;">
+            <i class="bi bi-truck display-4 text-warning mb-2"></i>
+            <h6 class="mb-0 text-white font-heading">Commercial Fleet</h6>
+          </div>
+          <div class="p-3 bg-white">
+            <h6 class="fw-bold mb-1 text-dark">Category C Training Trucks</h6>
+            <small class="text-muted">Heavy commercial practical sessions</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-4 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+          <div class="bg-primary text-white d-flex flex-column align-items-center justify-content-center p-4 text-center" style="height: 220px; background: linear-gradient(135deg, #020381, #e9a825) !important;">
+            <i class="bi bi-award display-4 text-white mb-2"></i>
+            <h6 class="mb-0 text-white font-heading">Graduation Day</h6>
+          </div>
+          <div class="p-3 bg-white">
+            <h6 class="fw-bold mb-1 text-dark">NTSA Smart DL Passers</h6>
+            <small class="text-muted">Celebrating confident new Kenyan drivers</small>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+<!-- Lightbox Modal -->
+<div class="modal fade" id="lightboxModal" tabindex="-1" aria-labelledby="lightboxModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg bg-dark text-white">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title" id="lightboxModalLabel">Gallery Photo</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center p-3">
+        <img id="lightboxImage" src="" alt="Preview" class="img-fluid rounded-3 mb-2" style="max-height: 70vh; object-fit: contain;">
+        <p id="lightboxCaption" class="text-light mb-0 small"></p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Dynamic Lightbox Modal handler
+  const lightboxModal = document.getElementById('lightboxModal');
+  if (lightboxModal) {
+    lightboxModal.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      const imgSrc = button.getAttribute('data-bs-img');
+      const title = button.getAttribute('data-bs-title');
+      const caption = button.getAttribute('data-bs-caption');
+
+      const modalTitle = lightboxModal.querySelector('#lightboxModalLabel');
+      const modalImg = lightboxModal.querySelector('#lightboxImage');
+      const modalCaption = lightboxModal.querySelector('#lightboxCaption');
+
+      if (imgSrc) {
+        modalImg.src = imgSrc;
+        modalImg.style.display = 'inline-block';
+      } else {
+        modalImg.style.display = 'none';
+      }
+      modalTitle.textContent = title || 'Gallery Image';
+      modalCaption.textContent = caption || '';
+    });
+  }
+</script>
+{% endblock %}

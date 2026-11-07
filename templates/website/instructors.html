@@ -1,0 +1,99 @@
+{% extends 'base_public.html' %}
+{% load static %}
+
+{% block title %}Our Instructors - {{ site_settings.school_name|default:"Belings Driving School" }}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-dark));">
+  <div class="container py-3">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <span class="badge bg-warning text-dark px-3 py-1 mb-2 font-monospace">NTSA CERTIFIED EDUCATORS</span>
+        <h1 class="display-5 fw-bold text-white mb-2">Meet Our Certified Instructors</h1>
+        <p class="lead mb-0 text-white-50">Patient, disciplined, and accredited professionals committed to your driving success.</p>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{% url 'website:enroll' %}" class="btn btn-brand-secondary btn-lg">
+          <i class="bi bi-pencil-square me-1"></i> Enroll With Us
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Instructors Showcase -->
+<section class="py-5" style="background-color: var(--body-bg);">
+  <div class="container py-lg-4">
+    <div class="section-header">
+      <span class="section-tag">Safety First Educators</span>
+      <h2 class="section-title">The Faces Behind Our High Pass Rate</h2>
+      <p class="section-desc">
+        Every Belings instructor is certified by the NTSA and undergoes regular refresher training in defensive driving techniques, road ethics, and modern learner pedagogy.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      {% for instructor in instructors %}
+      <div class="col-md-6 col-lg-4">
+        <div class="instructor-card h-100 d-flex flex-direction-column justify-content-between">
+          <div>
+            <div class="instructor-image d-flex align-items-center justify-content-center text-secondary position-relative">
+              {% if instructor.photo %}
+                <img src="{{ instructor.photo.url }}" alt="{{ instructor.full_name }}" class="w-100 h-100 object-fit-cover">
+              {% else %}
+                <div class="text-center p-4">
+                  <i class="bi bi-person-badge display-2 text-primary mb-2"></i>
+                  <div class="fw-bold">{{ instructor.title }}</div>
+                </div>
+              {% endif %}
+              <div class="position-absolute bottom-0 end-0 bg-warning text-dark px-3 py-1 m-2 rounded-2 small fw-bold">
+                {{ instructor.experience_years }}+ Yrs Exp
+              </div>
+            </div>
+            <div class="instructor-info p-4 text-start">
+              <h5 class="font-heading mb-1 text-primary">{{ instructor.full_name }}</h5>
+              <div class="text-secondary small fw-bold mb-2">{{ instructor.title }}</div>
+              <span class="badge bg-light text-primary border small mb-3">{{ instructor.license_categories }}</span>
+              <p class="text-muted small mb-0" style="line-height: 1.7;">
+                {{ instructor.bio }}
+              </p>
+            </div>
+          </div>
+          <div class="p-3 bg-light border-top d-flex justify-content-between align-items-center">
+            <span class="badge bg-success-subtle text-success border border-success small">
+              <i class="bi bi-shield-check me-1"></i> NTSA Certified
+            </span>
+            <a href="{% url 'website:enroll' %}" class="btn btn-outline-brand btn-sm">
+              Train with Us <i class="bi bi-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center py-5">
+        <p class="text-muted">Instructor profiles are currently being updated.</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Instructor Philosophy Banner -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mt-5 bg-white">
+      <div class="row align-items-center g-4">
+        <div class="col-md-8">
+          <h4 class="font-heading text-primary mb-2">Our Teaching Philosophy</h4>
+          <p class="text-secondary mb-0">
+            We understand that learning to drive can cause anxiety for first-time students. Our instructors are trained to create a supportive, calm environment where questions are welcomed and driving habits are built steadily with safety always as the priority.
+          </p>
+        </div>
+        <div class="col-md-4 text-md-end">
+          <a href="{% url 'website:enroll' %}" class="btn btn-brand-primary">
+            Start Your Lessons <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

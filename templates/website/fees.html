@@ -1,0 +1,140 @@
+{% extends 'base_public.html' %}
+{% load static humanize %}
+
+{% block title %}Course Fees & Pricing - {{ site_settings.school_name|default:"Belings Driving School" }}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-dark));">
+  <div class="container py-3">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <span class="badge bg-warning text-dark px-3 py-1 mb-2 font-monospace">TRANSPARENT TUITION</span>
+        <h1 class="display-5 fw-bold text-white mb-2">Driving Course Fee Structure</h1>
+        <p class="lead mb-0 text-white-50">Affordable, competitive driving education with no hidden costs. Installment plans available.</p>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{% url 'website:enroll' %}" class="btn btn-brand-secondary btn-lg">
+          <i class="bi bi-pencil-square me-1"></i> Enroll Online Now
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Fees Table Section -->
+<section class="py-5" style="background-color: var(--body-bg);">
+  <div class="container py-lg-3">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+      <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="mb-0 font-heading text-primary">Official Tuition Schedule (All License Categories)</h5>
+          <small class="text-muted">Fees listed in Kenya Shillings (KES) inclusive of practical and theory hours.</small>
+        </div>
+        <span class="badge bg-success-subtle text-success border border-success px-3 py-2">
+          <i class="bi bi-check-circle me-1"></i> Current Intake Rates
+        </span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" class="py-3 px-4">License Category</th>
+              <th scope="col" class="py-3">Course Title</th>
+              <th scope="col" class="py-3 text-center">Duration</th>
+              <th scope="col" class="py-3 text-center">Practical Hours</th>
+              <th scope="col" class="py-3 text-center">Theory Hours</th>
+              <th scope="col" class="py-3 text-end">Tuition Fee (KES)</th>
+              <th scope="col" class="py-3 text-center px-4">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for course in courses %}
+            <tr>
+              <td class="px-4">
+                <span class="badge bg-primary-subtle text-primary border border-primary px-2 py-1 fw-bold">
+                  {{ course.get_license_category_display|truncatechars:25 }}
+                </span>
+              </td>
+              <td>
+                <a href="{{ course.get_absolute_url }}" class="fw-bold text-dark text-decoration-none d-block">
+                  {{ course.name }}
+                </a>
+                <small class="text-muted">{{ course.short_description|truncatewords:8 }}</small>
+              </td>
+              <td class="text-center fw-semibold text-secondary">{{ course.duration }}</td>
+              <td class="text-center">{{ course.practical_hours }} Hours</td>
+              <td class="text-center">{{ course.theory_hours }} Hours</td>
+              <td class="text-end fw-bold text-primary fs-5">
+                KES {{ course.fee|intcomma }}
+              </td>
+              <td class="text-center px-4">
+                <a href="{% url 'website:enroll' %}?course={{ course.slug }}" class="btn btn-brand-secondary btn-sm text-nowrap">
+                  Enroll <i class="bi bi-arrow-right"></i>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center py-4 text-muted">
+                No fee records found in database.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card-footer bg-light p-4 border-top">
+        <div class="row g-4 align-items-center">
+          <div class="col-md-8">
+            <h6 class="fw-bold text-dark mb-1"><i class="bi bi-info-circle text-primary me-1"></i> Flexible Installment Policy</h6>
+            <p class="small text-muted mb-0">
+              Students can pay in up to 3 convenient installments (50% on admission, 30% midway, 20% before NTSA test booking). We accept M-Pesa Paybill, bank deposits, and direct school banker's cheques.
+            </p>
+          </div>
+          <div class="col-md-4 text-md-end">
+            <a href="https://wa.me/{{ site_settings.whatsapp_number|default:'254700123456' }}?text=Hello%20Belings%20Driving%20School,%20please%20send%20me%20your%20installment%20breakdown."
+               class="btn btn-whatsapp text-white" target="_blank" rel="noopener">
+              <i class="bi bi-whatsapp"></i> Inquire via WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional NTSA statutory fee breakdown note -->
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
+          <h5 class="font-heading text-primary mb-3"><i class="bi bi-check2-all text-success me-2"></i> What Is Included in Tuition</h5>
+          <ul class="text-secondary small list-unstyled" style="line-height: 2;">
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Comprehensive behind-the-wheel dual-pedal practical hours</li>
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Classroom theory lectures and Model Town Board drills</li>
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Basic vehicle maintenance and engine inspection sessions</li>
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i> First aid training certificate module</li>
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Unlimited mock road tests prior to official examination</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
+          <h5 class="font-heading text-primary mb-3"><i class="bi bi-shield-exclamation text-warning me-2"></i> Statutory NTSA Government Fees</h5>
+          <p class="small text-muted mb-3">
+            The following statutory charges are set by the National Transport and Safety Authority (NTSA) and paid directly via the eCitizen portal:
+          </p>
+          <ul class="text-secondary small list-unstyled" style="line-height: 2;">
+            <li><i class="bi bi-dot text-primary fs-4 align-middle"></i> Provisional Driving License (PDL): KES 650 (paid on eCitizen)</li>
+            <li><i class="bi bi-dot text-primary fs-4 align-middle"></i> NTSA Test Booking Fee: KES 1,050 (paid before test date)</li>
+            <li><i class="bi bi-dot text-primary fs-4 align-middle"></i> Interim Driving License (3-year or Smart DL): As per NTSA gazette</li>
+          </ul>
+          <small class="text-muted d-block mt-2">Our admissions office provides 100% free technical support to guide you through your eCitizen and TIMS payments.</small>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
