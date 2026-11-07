@@ -13,10 +13,7 @@ def safe_upload_path(instance, filename):
     return f"uploads/{uuid.uuid4().hex}{ext}"
 
 def validate_image_file(file):
-    """Validate image file type and maximum size of 5 MB."""
-    max_size_mb = 5
-    if file.size > max_size_mb * 1024 * 1024:
-        raise ValidationError(f"Maximum allowed image size is {max_size_mb} MB.")
+    """Validate image file format (allows any file size)."""
     ext = os.path.splitext(file.name)[1].lower()
     if ext not in ['.jpg', '.jpeg', '.png', '.webp', '.ico']:
         raise ValidationError("Unsupported format. Allowed formats: JPG, PNG, WEBP, ICO.")
