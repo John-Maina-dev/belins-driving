@@ -1,0 +1,77 @@
+{% extends "base_public.html" %}
+
+{% block title %}Instructor Lesson Schedule - {{ site_settings.school_name|default:"Belings Driving School" }}{% endblock %}
+
+{% block content %}
+<div class="py-5" style="background-color: var(--body-bg); min-height: 80vh;">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="font-heading fw-bold mb-1">Instructor Lesson Schedule</h2>
+        <p class="text-muted small mb-0">Record attendance and feedback notes for scheduled lessons. Completed lessons go to Admin for verification.</p>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Date & Slot</th>
+              <th>Student</th>
+              <th>Course & Type</th>
+              <th>Branch & Vehicle</th>
+              <th>Status</th>
+              <th>Complete / Feedback</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in bookings %}
+            <tr>
+              <td>
+                <div class="fw-bold">{{ b.date }}</div>
+                <small class="text-muted">{{ b.start_time|time:"H:i" }} - {{ b.end_time|time:"H:i" }}</small>
+              </td>
+              <td>
+                <div class="fw-semibold">{{ b.student.full_name }}</div>
+                <small class="text-muted">{{ b.student.phone }}</small>
+              </td>
+              <td>
+                <div>{{ b.course.name }}</div>
+                <span class="badge bg-light text-dark border">{{ b.get_lesson_type_display }}</span>
+              </td>
+              <td>
+                <div>{{ b.branch.name }}</div>
+                {% if b.vehicle %}<small class="text-muted">{{ b.vehicle.plate_number }}</small>{% endif %}
+              </td>
+              <td>
+                <span class="badge {% if b.status == 'VERIFIED' %}bg-success{% elif b.status == 'COMPLETED' %}bg-warning text-dark{% elif b.status == 'SCHEDULED' %}bg-primary{% else %}bg-secondary{% endif %}">
+                  {{ b.get_status_display }}
+                </span>
+              </td>
+              <td>
+                {% if b.status == 'SCHEDULED' %}
+                <form method="post" action="{% url 'students:complete_lesson' b.pk %}" class="d-flex gap-2 align-items-center">
+                  {% csrf_token %}
+                  <input type="text" name="instructor_notes" class="form-control form-control-sm" placeholder="Feedback notes..." required>
+                  <button type="submit" name="action" value="complete" class="btn btn-sm btn-success text-nowrap">Mark Completed</button>
+                  <button type="submit" name="action" value="no_show" class="btn btn-sm btn-outline-dark text-nowrap" formnovalidate>No-Show</button>
+                </form>
+                {% else %}
+                <span class="small text-muted">{{ b.instructor_notes|default:"-" }}</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted">No lessons scheduled yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

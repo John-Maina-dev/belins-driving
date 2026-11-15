@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}School Branches - Site Management{% endblock %}
+{% block page_title %}School Branches{% endblock %}
+{% block page_subtitle %}Manage campus branches across towns{% endblock %}
+
+{% block content %}
+<div class="content-card">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="fw-bold mb-0">Campus Branches</h5>
+    {% if is_super_admin %}
+    <a href="{% url 'manage:branch_create' %}" class="btn btn-primary btn-sm fw-bold">
+      <i class="bi bi-plus-lg me-1"></i> Add Branch
+    </a>
+    {% else %}
+    <span class="badge bg-secondary">Admins can edit branch maps; Super Admin manages everything else</span>
+    {% endif %}
+  </div>
+
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Order</th>
+          <th>Branch Name & Code</th>
+          <th>Town & Address</th>
+          <th>Contact</th>
+          <th>Status</th>
+          <th>Map</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in branches %}
+        <tr>
+          <td>{{ b.order }}</td>
+          <td>
+            <div class="fw-bold">{{ b.name }}</div>
+            <span class="badge bg-light text-dark border font-monospace">{{ b.code }}</span>
+          </td>
+          <td>
+            <div class="fw-semibold">{{ b.town }}</div>
+            <small class="text-muted">{{ b.address }}</small>
+          </td>
+          <td>
+            <div>{{ b.phone }}</div>
+            <small class="text-muted">{{ b.email }}</small>
+          </td>
+          <td>
+            {% if b.is_active %}
+              <span class="badge bg-success">Active</span>
+            {% else %}
+              <span class="badge bg-secondary">Inactive</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if b.has_map %}
+              <span class="badge bg-success"><i class="bi bi-geo-alt-fill me-1"></i>Map set</span>
+              {% if b.map_is_unverified_default %}<span class="badge bg-warning text-dark" title="Check the pin is on the right building">Unverified</span>{% endif %}
+            {% else %}
+              <span class="badge bg-light text-muted border">No map</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <div class="d-inline-flex gap-1">
+              {% if is_super_admin %}
+              <form method="post" action="{% url 'manage:branch_toggle' b.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-secondary">
+                  {% if b.is_active %}Deactivate{% else %}Activate{% endif %}
+                </button>
+              </form>
+              <a href="{% url 'manage:branch_edit' b.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+              <a href="{% url 'manage:branch_delete' b.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+              {% else %}
+              <a href="{% url 'manage:branch_edit' b.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-geo-alt me-1"></i>Edit map</a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center py-4 text-muted">No branches configured yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+

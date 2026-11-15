@@ -246,25 +246,62 @@ a:hover {
 }
 
 /* ==========================================================================
-   HERO SECTION
+   HERO SECTION (Natural Image Colors, No Blue Tint Overlay by Default)
+   Full-width, 60-80vh on desktop, 45vh on mobile, object-fit: cover
    ========================================================================== */
 .hero-section {
   position: relative;
-  background: linear-gradient(135deg, rgba(2, 3, 129, 0.95) 0%, rgba(1, 2, 82, 0.97) 100%),
-              url('/static/images/hero-bg.jpg') center/cover no-repeat;
+  background-color: #0f172a;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
   color: #ffffff;
-  padding: 100px 0 110px;
+  min-height: 72vh;
+  display: flex;
+  align-items: center;
+  padding: 80px 0 90px;
   overflow: hidden;
 }
 
-.hero-section::after {
-  content: '';
+.carousel-item:not(.active):not(.carousel-item-next):not(.carousel-item-prev) {
+  display: none !important;
+}
+
+.hero-bg-media {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 40px;
-  background: linear-gradient(to top, var(--body-bg), transparent);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 767.98px) {
+  .hero-section {
+    min-height: 45vh;
+    padding: 56px 0 64px;
+  }
+}
+
+.hero-overlay-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero-text-shadow .hero-title,
+.hero-text-shadow .hero-subtitle {
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.75), 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.hero-text-panel {
+  background: rgba(15, 23, 42, 0.68);
+  backdrop-filter: blur(6px);
+  padding: 28px 32px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .hero-badge {
@@ -675,22 +712,165 @@ a:hover {
   transform: scale(1.08);
 }
 
-/* Gallery Lightbox Modal styling */
-.gallery-thumbnail {
-  cursor: pointer;
-  transition: var(--transition-smooth);
-  border-radius: var(--radius-sm);
+/* Generous Image Areas on Course, Branch & Instructor Cards (220-260px, 16:9 / 4:3) */
+.course-card-media,
+.branch-card-media {
+  width: 100%;
+  height: 240px;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
+  background-color: #0f172a;
 }
 
-.gallery-thumbnail:hover img {
+.course-card-media img,
+.branch-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.course-card:hover .course-card-media img {
   transform: scale(1.04);
 }
 
-.gallery-thumbnail img {
+/* Gallery Card Media (Large 4:3 aspect ratio, subtle hover zoom) */
+.gallery-thumbnail {
+  cursor: pointer;
   transition: var(--transition-smooth);
-  width: 100%;
-  height: 230px;
-  object-fit: cover;
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }
 
+.gallery-card-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background-color: #0f172a;
+}
+
+.gallery-card-media img,
+.gallery-thumbnail img {
+  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-thumbnail:hover .gallery-card-media img,
+.gallery-thumbnail:hover img {
+  transform: scale(1.05);
+}
+
+/* Full-Screen Lightbox Overlay (object-fit: contain, uncropped, keyboard & touch swipe) */
+.belings-lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 8, 24, 0.96);
+  z-index: 2050;
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  user-select: none;
+}
+
+.belings-lightbox-overlay.active {
+  display: flex;
+}
+
+.belings-lightbox-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  color: #ffffff;
+}
+
+.belings-lightbox-stage {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 64px;
+  overflow: hidden;
+}
+
+.belings-lightbox-stage img {
+  max-width: 92vw;
+  max-height: 80vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 6px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.65);
+}
+
+.belings-lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(15, 23, 42, 0.75);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.belings-lightbox-nav:hover {
+  background: var(--brand-secondary);
+  color: #000000;
+}
+
+.belings-lightbox-prev {
+  left: 16px;
+}
+
+.belings-lightbox-next {
+  right: 16px;
+}
+
+.belings-lightbox-footer {
+  padding: 14px 24px 22px;
+  text-align: center;
+  color: #f8fafc;
+}
+
+@media (max-width: 767.98px) {
+  .belings-lightbox-stage {
+    padding: 0 12px;
+  }
+  .belings-lightbox-stage img {
+    max-width: 96vw;
+    max-height: 75vh;
+  }
+}
+
+
+
+/* Branch map (public Contact page): ~400px desktop, 300px mobile, responsive iframe */
+.branch-map-frame {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  background: #eef1f4;
+}
+.branch-map-frame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+@media (max-width: 767.98px) {
+  .branch-map-frame { height: 300px; }
+}

@@ -35,14 +35,14 @@
             </td>
             <td><code>{{ item.url }}</code></td>
             <td>
-              {% if item.is_external %}
+              {% if item.open_in_new_tab %}
                 <span class="badge bg-info text-dark">Yes (_blank)</span>
               {% else %}
                 <span class="text-muted small">No</span>
               {% endif %}
             </td>
             <td>
-              {% if item.is_active %}
+              {% if item.is_visible %}
                 <span class="badge bg-success">Active</span>
               {% else %}
                 <span class="badge bg-secondary">Hidden</span>

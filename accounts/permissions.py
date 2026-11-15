@@ -1,6 +1,5 @@
 from functools import wraps
-from django.core.exceptions import PermissionDenied
-from django.shortcuts import redirect
+from django.http import Http404
 from django.contrib.auth.mixins import AccessMixin
 
 def get_user_role(user):
@@ -24,43 +23,38 @@ def is_management_authorized(user):
 
 
 def super_admin_required(view_func):
+    """Raise 404 for any user who is not a Super Admin so management routes are undiscoverable."""
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return redirect(f"/admin/login/?next={request.path}")
         if not is_super_admin(request.user):
-            raise PermissionDenied("Access denied. This action requires Super Administrator privileges.")
+            raise Http404("Page not found")
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 
 
 def management_required(view_func):
+    """Raise 404 for anonymous users and non-management roles (student, instructor, receptionist)."""
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return redirect(f"/admin/login/?next={request.path}")
         if not is_management_authorized(request.user):
-            raise PermissionDenied("Access denied. Only School Administrators and Super Administrators can access the management panel.")
+            raise Http404("Page not found")
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 
 
 class ManagementRequiredMixin(AccessMixin):
-    """Verify that the current user is authenticated and is an Admin or Super Admin."""
+    """Verify that the current user is an Admin or Super Admin; otherwise raise 404."""
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return self.handle_no_permission()
         if not is_management_authorized(request.user):
-            raise PermissionDenied("Access denied. Management authorization required.")
+            raise Http404("Page not found")
         return super().dispatch(request, *args, **kwargs)
 
 
 class SuperAdminRequiredMixin(AccessMixin):
-    """Verify that the current user is a Super Admin."""
+    """Verify that the current user is a Super Admin; otherwise raise 404."""
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return self.handle_no_permission()
         if not is_super_admin(request.user):
-            raise PermissionDenied("Access denied. Super Administrator authorization required.")
+            raise Http404("Page not found")
         return super().dispatch(request, *args, **kwargs)
+
 

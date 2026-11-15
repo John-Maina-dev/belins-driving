@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Lesson Verification & Schedule - Site Management{% endblock %}
+{% block page_title %}Lesson Verification & Schedule{% endblock %}
+{% block page_subtitle %}Verify completed lessons or manage the training schedule{% endblock %}
+
+{% block content %}
+<div class="content-card">
+  <!-- Filters -->
+  <form method="get" class="row g-2 align-items-end mb-4">
+    <div class="col-md-2">
+      <label class="form-label small fw-bold">Status</label>
+      <select name="status" class="form-select form-select-sm">
+        <option value="COMPLETED" {% if status_filter == 'COMPLETED' %}selected{% endif %}>Completed (Awaiting Verify) ({{ completed_count }})</option>
+        <option value="SCHEDULED" {% if status_filter == 'SCHEDULED' %}selected{% endif %}>Scheduled ({{ scheduled_count }})</option>
+        <option value="VERIFIED" {% if status_filter == 'VERIFIED' %}selected{% endif %}>Verified ({{ verified_count }})</option>
+        <option value="REJECTED" {% if status_filter == 'REJECTED' %}selected{% endif %}>Rejected / Disputed</option>
+        <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+        <option value="ALL" {% if status_filter == 'ALL' %}selected{% endif %}>All Lessons</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small fw-bold">Branch</label>
+      <select name="branch" class="form-select form-select-sm">
+        <option value="">All Branches</option>
+        {% for b in branches %}
+        <option value="{{ b.id }}" {% if selected_branch == b.id %}selected{% endif %}>{{ b.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small fw-bold">Instructor</label>
+      <select name="instructor" class="form-select form-select-sm">
+        <option value="">All Instructors</option>
+        {% for i in instructors %}
+        <option value="{{ i.id }}" {% if selected_instructor == i.id %}selected{% endif %}>{{ i.full_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small fw-bold">Course</label>
+      <select name="course" class="form-select form-select-sm">
+        <option value="">All Courses</option>
+        {% for c in courses %}
+        <option value="{{ c.id }}" {% if selected_course == c.id %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small fw-bold">Date</label>
+      <input type="date" name="date" value="{{ date_filter }}" class="form-control form-control-sm">
+    </div>
+    <div class="col-md-2 d-flex gap-1">
+      <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
+      <a href="{% url 'manage:lessons_list' %}?status=ALL" class="btn btn-sm btn-outline-secondary">Reset</a>
+    </div>
+  </form>
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="fw-bold mb-0">Matching Lessons ({{ bookings|length }})</h6>
+    {% if completed_count > 0 %}
+    <form method="post" action="{% url 'manage:lesson_bulk_verify' %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-sm btn-success fw-bold">
+        <i class="bi bi-check2-all me-1"></i> Bulk Verify All Completed ({{ completed_count }})
+      </button>
+    </form>
+    {% endif %}
+  </div>
+
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Date & Slot</th>
+          <th>Student & Course</th>
+          <th>Branch & Instructor</th>
+          <th>Status</th>
+          <th>Instructor Notes</th>
+          <th class="text-end">Verification / Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in bookings %}
+        <tr>
+          <td>
+            <div class="fw-bold">{{ b.date }}</div>
+            <small class="text-muted">{{ b.start_time|time:"H:i" }} - {{ b.end_time|time:"H:i" }} ({{ b.get_lesson_type_display }})</small>
+          </td>
+          <td>
+            <div class="fw-bold">{{ b.student.full_name }}</div>
+            <small class="text-muted">{{ b.course.name }}</small>
+          </td>
+          <td>
+            <div>{{ b.branch.name }}</div>
+            <small class="text-muted">{{ b.instructor.full_name|default:"Unassigned" }}</small>
+          </td>
+          <td>
+            {% if b.status == 'VERIFIED' %}
+              <span class="badge bg-success">Verified</span>
+              {% if b.verified_by %}<div class="small text-muted">by {{ b.verified_by.username }}</div>{% endif %}
+            {% elif b.status == 'COMPLETED' %}
+              <span class="badge bg-warning text-dark">Awaiting Verification</span>
+            {% elif b.status == 'SCHEDULED' %}
+              <span class="badge bg-primary">Scheduled</span>
+            {% elif b.status == 'REJECTED' %}
+              <span class="badge bg-danger">Rejected</span>
+            {% else %}
+              <span class="badge bg-secondary">{{ b.get_status_display }}</span>
+            {% endif %}
+          </td>
+          <td class="small">
+            {{ b.instructor_notes|default:"-" }}
+            {% if b.rejection_reason %}<div class="text-danger"><strong>Reason:</strong> {{ b.rejection_reason }}</div>{% endif %}
+          </td>
+          <td class="text-end">
+            {% if b.status == 'COMPLETED' or b.status == 'SCHEDULED' %}
+            <div class="d-inline-flex gap-1 align-items-center">
+              <form method="post" action="{% url 'manage:lesson_verify' b.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-success fw-bold">Verify</button>
+              </form>
+              <form method="post" action="{% url 'manage:lesson_reject' b.pk %}" class="d-inline-flex gap-1">
+                {% csrf_token %}
+                <input type="text" name="rejection_reason" class="form-control form-control-sm" placeholder="Reason..." style="width: 120px;">
+                <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
+              </form>
+            </div>
+            {% else %}
+            <span class="text-muted small">-</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center py-4 text-muted">No lessons found matching your filter.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+

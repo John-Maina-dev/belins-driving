@@ -61,10 +61,15 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'driving_school.middleware.InactivityTimeoutMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'driving_school.middleware.MaintenanceModeMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
 ]
+
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/dashboard/'
+LOGOUT_REDIRECT_URL = '/'
 
 ROOT_URLCONF = 'driving_school.urls'
 
@@ -106,6 +111,13 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+if DATABASES['default'].get('ENGINE') == 'django.db.backends.sqlite3':
+    DATABASES['default'].setdefault('OPTIONS', {})['timeout'] = 30
+
+# Authentication Backends
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.ApprovedUserBackend',
+]
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -147,13 +159,15 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Media files (user uploads)
+# Media files (user uploads) - configurable via MEDIA_ROOT in .env (e.g. outside OneDrive)
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+_custom_media_root = config('MEDIA_ROOT', default='').strip()
+MEDIA_ROOT = Path(_custom_media_root) if _custom_media_root else (BASE_DIR / 'media')
 
-# File upload size limits (allow high-resolution photos of any size)
+# File upload size and count limits
 DATA_UPLOAD_MAX_MEMORY_SIZE = 150 * 1024 * 1024   # 150 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024    # 50 MB in memory buffer
+DATA_UPLOAD_MAX_NUMBER_FILES = 200                # Allow batch upload of up to 200 files at once
 
 # WhiteNoise storage configuration
 STORAGES = {
@@ -190,10 +204,13 @@ SMS_USERNAME = config('SMS_USERNAME', default='sandbox')
 SMS_API_KEY = config('SMS_API_KEY', default='')
 SMS_SENDER_ID = config('SMS_SENDER_ID', default='')
 
-# Email notification configuration
-EMAIL_BACKEND = config(
-    'EMAIL_BACKEND',
-    default='django.core.mail.backends.console.EmailBackend'
-)
+# Session Configuration (Auto logout after 15 minutes of inactivity)
+SESSION_COOKIE_AGE = 900  # 15 minutes in seconds
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# Email notification configuration (Dynamic database SMTP with console fallback)
+EMAIL_BACKEND = 'driving_school.email_backend.DatabaseEmailBackend'
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='info@belingsdriving.co.ke')
 CONTACT_NOTIFICATION_EMAIL = config('CONTACT_NOTIFICATION_EMAIL', default='admin@belingsdriving.co.ke')
+FIELD_ENCRYPTION_KEY = config('FIELD_ENCRYPTION_KEY', default='')

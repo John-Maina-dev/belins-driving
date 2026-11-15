@@ -14,7 +14,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
             "description": "Main banner headline and call to action shown to visitors."
         }),
         ("Contact & Location Details", {
-            "fields": ("phone", "phone_secondary", "email", "address", "whatsapp_number", "opening_hours", "map_embed_url"),
+            "fields": ("phone", "phone_secondary", "email", "address", "whatsapp_number", "opening_hours"),
             "description": "Shown on topbar, contact page, and footer."
         }),
         ("About Us Details", {

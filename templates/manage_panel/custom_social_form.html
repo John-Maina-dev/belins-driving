@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Site Management{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="content-card" style="max-width: 680px;">
+  <form method="post">
+    {% csrf_token %}
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">Platform Label <span class="text-danger">*</span></label>
+        {{ form.label }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Bootstrap Icon Class</label>
+        {{ form.icon }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label fw-semibold">Order</label>
+        {{ form.order }}
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">URL <span class="text-danger">*</span></label>
+        {{ form.url }}
+      </div>
+      <div class="col-12">
+        <div class="form-check">
+          {{ form.is_active }}
+          <label class="form-check-label fw-semibold">Active</label>
+        </div>
+      </div>
+    </div>
+    <div class="mt-4 d-flex gap-2">
+      <button type="submit" class="btn btn-primary fw-bold px-4">Save Link</button>
+      <a href="{% url 'manage:social_links' %}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+

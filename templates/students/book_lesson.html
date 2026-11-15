@@ -1,0 +1,153 @@
+{% extends "base_public.html" %}
+
+{% block title %}Book a Driving Lesson - {{ site_settings.school_name|default:"Belings Driving School" }}{% endblock %}
+
+{% block content %}
+<div class="py-5" style="background-color: var(--body-bg); min-height: 80vh;">
+  <div class="container" style="max-width: 860px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="font-heading fw-bold mb-1">Book a Driving Lesson</h2>
+        <p class="text-muted small mb-0">
+          Course: <strong>{{ enrollment.course.name }}</strong> &middot;
+          Verified Practical: <strong>{{ enrollment.verified_practical_hours|floatformat:0 }} / {{ enrollment.course.practical_hours }} hrs</strong>
+        </p>
+      </div>
+      <a href="{% url 'students:dashboard' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+      </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+      <form method="post" action="{% url 'students:book_lesson' %}" id="bookLessonForm">
+        {% csrf_token %}
+
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label fw-bold small" for="id_lesson_type">Lesson Type <span class="text-danger">*</span></label>
+            <select name="lesson_type" id="id_lesson_type" class="form-select" required>
+              <option value="PRACTICAL">Practical Driving Lesson</option>
+              <option value="THEORY">Classroom Theory Lecture</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold small" for="id_branch">Training Branch <span class="text-danger">*</span></label>
+            <select name="branch" id="id_branch" class="form-select" required>
+              {% for b in branches %}
+              <option value="{{ b.id }}" {% if selected_branch and b.id == selected_branch.id %}selected{% endif %}>
+                {{ b.name }} ({{ b.town }})
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold small" for="id_date">Lesson Date <span class="text-danger">*</span></label>
+            <input type="date" name="date" id="id_date" class="form-control"
+                   value="{{ target_date|date:'Y-m-d' }}"
+                   min="{{ min_date|date:'Y-m-d' }}" required>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold small" for="id_time_slot">Available Time Slot <span class="text-danger">*</span></label>
+            <select name="time_slot" id="id_time_slot" class="form-select" required>
+              {% for slot in available_slots %}
+              <option value="{{ slot.code }}">{{ slot.label }}</option>
+              {% empty %}
+              <option value="">-- No free slots available on this date --</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold small" for="id_instructor">Preferred Instructor (Optional)</label>
+            <select name="instructor" id="id_instructor" class="form-select">
+              <option value="">-- Auto-Assign Available Instructor --</option>
+              {% for inst in instructors %}
+              <option value="{{ inst.id }}">{{ inst.full_name }} ({{ inst.license_categories }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6" id="vehicleFieldWrapper">
+            <label class="form-label fw-bold small" for="id_vehicle">Preferred Training Vehicle (Optional)</label>
+            <select name="vehicle" id="id_vehicle" class="form-select">
+              <option value="">-- Auto-Assign Available Vehicle --</option>
+              {% for veh in vehicles %}
+              <option value="{{ veh.id }}">{{ veh.plate_number }} - {{ veh.make_model }} ({{ veh.get_transmission_display }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label fw-bold small" for="id_student_notes">Notes or Focus Area (Optional)</label>
+            <textarea name="student_notes" id="id_student_notes" rows="2" class="form-control" placeholder="e.g. Hill start practice, roundabout drills, reversing..."></textarea>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-brand-primary btn-lg w-100 fw-bold">
+          <i class="bi bi-calendar2-check me-2"></i> Confirm Lesson Booking
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function() {
+    const lessonTypeEl = document.getElementById('id_lesson_type');
+    const branchEl = document.getElementById('id_branch');
+    const dateEl = document.getElementById('id_date');
+    const instructorEl = document.getElementById('id_instructor');
+    const vehicleEl = document.getElementById('id_vehicle');
+    const slotEl = document.getElementById('id_time_slot');
+    const vehicleWrapper = document.getElementById('vehicleFieldWrapper');
+
+    function refreshSlots() {
+      if (lessonTypeEl && vehicleWrapper) {
+        vehicleWrapper.style.display = lessonTypeEl.value === 'PRACTICAL' ? '' : 'none';
+      }
+      const params = new URLSearchParams({
+        date: dateEl ? dateEl.value : '',
+        branch: branchEl ? branchEl.value : '',
+        lesson_type: lessonTypeEl ? lessonTypeEl.value : 'PRACTICAL',
+        instructor: instructorEl ? instructorEl.value : '',
+        vehicle: vehicleEl ? vehicleEl.value : ''
+      });
+      fetch("{% url 'students:available_slots_api' %}?" + params.toString(), {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (!slotEl) return;
+        const currentVal = slotEl.value;
+        slotEl.innerHTML = '';
+        const slots = data.slots || [];
+        if (slots.length === 0) {
+          const opt = document.createElement('option');
+          opt.value = '';
+          opt.textContent = '-- No free slots available on this date --';
+          slotEl.appendChild(opt);
+        } else {
+          slots.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.code;
+            opt.textContent = s.label;
+            if (s.code === currentVal) opt.selected = true;
+            slotEl.appendChild(opt);
+          });
+        }
+      })
+      .catch(() => {});
+    }
+
+    [lessonTypeEl, branchEl, dateEl, instructorEl, vehicleEl].forEach(el => {
+      if (el) el.addEventListener('change', refreshSlots);
+    });
+  })();
+</script>
+{% endblock %}
+

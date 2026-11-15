@@ -15,10 +15,17 @@
         <form method="post" enctype="multipart/form-data">
           {% csrf_token %}
 
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
-            {{ form.full_name }}
-            {% if form.full_name.errors %}<div class="text-danger small">{{ form.full_name.errors }}</div>{% endif %}
+          <div class="row g-3 mb-3">
+            <div class="col-sm-7">
+              <label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+              {{ form.full_name }}
+              {% if form.full_name.errors %}<div class="text-danger small">{{ form.full_name.errors }}</div>{% endif %}
+            </div>
+            <div class="col-sm-5">
+              <label class="form-label fw-semibold">Job Title / Designation</label>
+              {{ form.title }}
+              <div class="form-text">e.g. Senior Instructor, Motorcycle Specialist</div>
+            </div>
           </div>
 
           <div class="row g-3 mb-3">
@@ -34,15 +41,24 @@
           </div>
 
           <div class="row g-3 mb-3">
-            <div class="col-sm-6">
-              <label class="form-label fw-semibold">License Classes Held <span class="text-danger">*</span></label>
-              {{ form.license_classes }}
+            <div class="col-sm-4">
+              <label class="form-label fw-semibold">License Categories <span class="text-danger">*</span></label>
+              {{ form.license_categories }}
               <div class="form-text">e.g. A2, B, C1, C, CE</div>
             </div>
-            <div class="col-sm-6">
+            <div class="col-sm-4">
               <label class="form-label fw-semibold">Years of Experience</label>
-              {{ form.years_experience }}
+              {{ form.experience_years }}
             </div>
+            <div class="col-sm-4">
+              <label class="form-label fw-semibold">NTSA Cert. No.</label>
+              {{ form.ntsa_cert_number }}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Assigned Campus Branch</label>
+            {{ form.branch }}
           </div>
 
           <div class="mb-3">
@@ -60,15 +76,23 @@
           </div>
 
           <div class="row g-3 mb-4">
-            <div class="col-sm-6">
+            <div class="col-sm-4">
               <label class="form-label fw-semibold">Display Order</label>
               {{ form.order }}
             </div>
-            <div class="col-sm-6 d-flex align-items-center pt-3">
+            <div class="col-sm-4 d-flex align-items-center pt-3">
               <div class="form-check">
                 {{ form.is_active }}
                 <label class="form-check-label fw-semibold" for="{{ form.is_active.id_for_label }}">
                   Active Instructor
+                </label>
+              </div>
+            </div>
+            <div class="col-sm-4 d-flex align-items-center pt-3">
+              <div class="form-check">
+                {{ form.is_featured }}
+                <label class="form-check-label fw-semibold" for="{{ form.is_featured.id_for_label }}">
+                  Feature on Homepage
                 </label>
               </div>
             </div>

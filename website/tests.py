@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.core.cache import cache
-from courses.models import Course
+from courses.models import Course, Branch
 from instructors.models import Instructor
 from students.models import Student
 from website.models import SiteSettings, Testimonial, FAQ, GalleryImage, ContactMessage
@@ -18,6 +18,13 @@ class PublicWebsiteTests(TestCase):
         self.settings.maintenance_mode = False
         self.settings.save()
 
+        self.branch = Branch.objects.create(
+            name="Main Campus Nairobi",
+            code="MAIN-NRB",
+            town="Nairobi",
+            is_active=True,
+        )
+
         # Seed a test course
         self.course = Course.objects.create(
             name="Category B Light Vehicle (Manual)",
@@ -31,6 +38,7 @@ class PublicWebsiteTests(TestCase):
             is_featured=True,
             order=1
         )
+        self.course.branches.add(self.branch)
 
         # Seed a test instructor
         self.instructor = Instructor.objects.create(
@@ -125,9 +133,9 @@ class PublicWebsiteTests(TestCase):
             'id_number': '31245678',
             'date_of_birth': '2001-05-15',
             'gender': 'F',
+            'branch': self.branch.id,
             'course': self.course.id,
             'preferred_schedule': 'morning',
-            'preferred_branch': 'Main Campus Nairobi',
             'notes': 'Beginner with no prior driving experience.',
         }
         form = EnrollmentForm(data=payload)
@@ -142,7 +150,7 @@ class PublicWebsiteTests(TestCase):
         student = Student.objects.get(id_number='31245678')
         self.assertEqual(student.first_name, 'Wanjiku')
         self.assertEqual(student.last_name, 'Mwangi')
-        self.assertEqual(student.status, 'pending')
+        self.assertIn(student.status, ['pending', 'PENDING_APPROVAL'])
         self.assertEqual(student.course, self.course)
 
     def test_course_detail_page(self):

@@ -34,23 +34,42 @@
 
           <div class="row g-3 mb-3">
             <div class="col-sm-6">
-              <label class="form-label fw-semibold">Primary Button Text</label>
-              {{ form.button_text }}
+              <label class="form-label fw-semibold">Action Button Text</label>
+              {{ form.cta_text }}
             </div>
             <div class="col-sm-6">
-              <label class="form-label fw-semibold">Primary Button URL</label>
-              {{ form.button_link }}
+              <label class="form-label fw-semibold">Action Button URL</label>
+              {{ form.cta_link }}
             </div>
           </div>
 
-          <div class="row g-3 mb-3">
-            <div class="col-sm-6">
-              <label class="form-label fw-semibold">Secondary Button Text</label>
-              {{ form.secondary_button_text }}
-            </div>
-            <div class="col-sm-6">
-              <label class="form-label fw-semibold">Secondary Button URL</label>
-              {{ form.secondary_button_link }}
+          <div class="p-3 bg-light rounded-3 border mb-3">
+            <h6 class="fw-bold small text-uppercase text-muted mb-2">Overlay & Text Readability Controls</h6>
+            <div class="row g-3 align-items-center">
+              <div class="col-sm-6">
+                <div class="form-check">
+                  {{ form.overlay_enabled }}
+                  <label class="form-check-label fw-semibold" for="{{ form.overlay_enabled.id_for_label }}">
+                    Enable Color Overlay (Default OFF for natural colors)
+                  </label>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="form-check">
+                  {{ form.text_panel_enabled }}
+                  <label class="form-check-label fw-semibold" for="{{ form.text_panel_enabled.id_for_label }}">
+                    Enable Semi-Transparent Text Panel
+                  </label>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label small fw-semibold">Overlay Color</label>
+                {{ form.overlay_color }}
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label small fw-semibold">Overlay Opacity (0 - 70%)</label>
+                {{ form.overlay_opacity }}
+              </div>
             </div>
           </div>
 

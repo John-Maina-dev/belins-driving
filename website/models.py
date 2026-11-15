@@ -8,15 +8,17 @@ from django.core.cache import cache
 def safe_upload_path(instance, filename):
     """Generate safe, randomized UUID filename to prevent arbitrary file upload vulnerabilities."""
     ext = os.path.splitext(filename)[1].lower()
-    if ext not in ['.jpg', '.jpeg', '.png', '.webp', '.ico']:
+    if ext not in ['.jpg', '.jpeg', '.png', '.webp', '.ico', '.gif']:
         ext = '.jpg'
     return f"uploads/{uuid.uuid4().hex}{ext}"
 
 def validate_image_file(file):
-    """Validate image file format (allows any file size)."""
+    """Validate image file format and integrity using Pillow (max 8 MB)."""
     ext = os.path.splitext(file.name)[1].lower()
-    if ext not in ['.jpg', '.jpeg', '.png', '.webp', '.ico']:
-        raise ValidationError("Unsupported format. Allowed formats: JPG, PNG, WEBP, ICO.")
+    if ext not in ['.jpg', '.jpeg', '.png', '.webp', '.ico', '.gif']:
+        raise ValidationError("Unsupported format. Allowed formats: JPG, PNG, WEBP, ICO, GIF.")
+    from .image_utils import validate_uploaded_image_strict
+    validate_uploaded_image_strict(file)
 
 def validate_hex_color(value):
     """Validate 3 or 6 digit hex color string (e.g. #020381)."""
@@ -28,6 +30,21 @@ def validate_kenyan_phone(value):
     clean = re.sub(r'[\s\-]', '', value)
     if not re.match(r'^(?:\+254|0)[17]\d{8}$', clean):
         raise ValidationError("Enter a valid Kenyan phone number (e.g. 0712 345 678 or +254 700 123 456).")
+
+
+def hex_to_rgba(hex_color, opacity_percent):
+    """Convert hex color and 0-70% opacity to CSS rgba() string."""
+    hex_str = (hex_color or '#000000').strip().lstrip('#')
+    if len(hex_str) == 3:
+        hex_str = ''.join([c * 2 for c in hex_str])
+    try:
+        r = int(hex_str[0:2], 16)
+        g = int(hex_str[2:4], 16)
+        b = int(hex_str[4:6], 16)
+    except Exception:
+        r, g, b = 0, 0, 0
+    alpha = max(0, min(70, int(opacity_percent or 0))) / 100.0
+    return f"rgba({r}, {g}, {b}, {alpha:.2f})"
 
 
 class SiteSettings(models.Model):
@@ -53,8 +70,8 @@ class SiteSettings(models.Model):
     ]
 
     # 1. Branding & Identity
-    school_name = models.CharField(max_length=150, default="Belings Driving School")
-    tagline = models.CharField(max_length=255, default="Shaping Confident, Competent & Defensive Drivers Across Kenya")
+    school_name = models.CharField(max_length=150, default="Belings Driving School", blank=True)
+    tagline = models.CharField(max_length=255, blank=True, default="")
     logo_light = models.ImageField(upload_to=safe_upload_path, validators=[validate_image_file], blank=True, null=True, help_text="Logo for dark backgrounds")
     logo_dark = models.ImageField(upload_to=safe_upload_path, validators=[validate_image_file], blank=True, null=True, help_text="Logo for light backgrounds")
     favicon = models.ImageField(upload_to=safe_upload_path, validators=[validate_image_file], blank=True, null=True)
@@ -65,58 +82,71 @@ class SiteSettings(models.Model):
     font_body = models.CharField(max_length=100, choices=FONT_BODY_CHOICES, default="'Inter', sans-serif")
 
     # 2. Homepage Content
-    hero_title = models.CharField(max_length=255, default="Drive with Confidence. Pass Your Test on First Attempt.")
-    hero_subtitle = models.TextField(default="NTSA-accredited driving institution offering category A, B, and C curriculum with modern dual-pedal vehicles, certified professional instructors, and personalized schedules.")
+    hero_title = models.CharField(max_length=255, blank=True, default="")
+    hero_subtitle = models.TextField(blank=True, default="")
     hero_image = models.ImageField(upload_to=safe_upload_path, validators=[validate_image_file], blank=True, null=True)
-    hero_cta_text = models.CharField(max_length=50, default="Enroll Now")
-    hero_cta_link = models.CharField(max_length=100, default="/enroll/")
+    hero_overlay_enabled = models.BooleanField(default=False, help_text="Enable dark color overlay on hero image")
+    hero_overlay_color = models.CharField(max_length=20, default="#000000", help_text="Overlay color in hex (default #000000)")
+    hero_overlay_opacity = models.PositiveSmallIntegerField(default=0, help_text="Overlay opacity (0 to 70%)")
+    hero_text_panel_enabled = models.BooleanField(default=False, help_text="Show semi-transparent panel behind hero text")
+    hero_cta_text = models.CharField(max_length=50, blank=True, default="Enroll Now")
+    hero_cta_link = models.CharField(max_length=100, blank=True, default="/enroll/")
 
-    about_section_tag = models.CharField(max_length=100, default="About Belings Driving School")
-    about_section_title = models.CharField(max_length=255, default="Your Journey to Responsible, Confident Driving Starts Here")
-    about_section_text = models.TextField(default="Established with a commitment to road safety and driving excellence, Belings Driving School has equipped thousands of Kenyan drivers with defensive motoring skills, sound road ethics, and technical proficiency.")
+    about_section_tag = models.CharField(max_length=100, blank=True, default="")
+    about_section_title = models.CharField(max_length=255, blank=True, default="")
+    about_section_text = models.TextField(blank=True, default="")
 
-    courses_section_title = models.CharField(max_length=255, default="NTSA Approved Driving Courses")
-    courses_section_desc = models.TextField(default="Comprehensive theoretical knowledge and hands-on practical hours tailored to equip you with defensive driving instincts.")
+    courses_section_title = models.CharField(max_length=255, blank=True, default="")
+    courses_section_desc = models.TextField(blank=True, default="")
 
-    why_choose_title = models.CharField(max_length=255, default="The Belings Advantage")
-    why_choose_desc = models.TextField(default="We go beyond preparing you for a 15-minute test; we build confident, safety-conscious motorists equipped for Kenya's busy roadways.")
+    why_choose_title = models.CharField(max_length=255, blank=True, default="")
+    why_choose_desc = models.TextField(blank=True, default="")
 
-    cta_banner_badge = models.CharField(max_length=100, default="LIMITED SLOTS AVAILABLE")
-    cta_banner_title = models.CharField(max_length=255, default="Ready to Get Behind the Wheel?")
-    cta_banner_desc = models.TextField(default="Join thousands of successful drivers. Register today and enjoy affordable rates, installment options, and comprehensive NTSA test support.")
-    cta_banner_btn_text = models.CharField(max_length=50, default="Start Online Enrollment")
-    cta_banner_btn_link = models.CharField(max_length=100, default="/enroll/")
+    cta_banner_badge = models.CharField(max_length=100, blank=True, default="")
+    cta_banner_title = models.CharField(max_length=255, blank=True, default="")
+    cta_banner_desc = models.TextField(blank=True, default="")
+    cta_banner_btn_text = models.CharField(max_length=50, blank=True, default="Start Online Enrollment")
+    cta_banner_btn_link = models.CharField(max_length=100, blank=True, default="/enroll/")
 
     # 3. Key Statistics
-    stat_students = models.CharField(max_length=50, default="12,500+")
-    stat_pass_rate = models.CharField(max_length=50, default="98.5%")
-    stat_experience_years = models.CharField(max_length=50, default="12+")
-    stat_certified_instructors = models.CharField(max_length=50, default="24+")
+    stat_students = models.CharField(max_length=50, blank=True, default="")
+    stat_pass_rate = models.CharField(max_length=50, blank=True, default="")
+    stat_experience_years = models.CharField(max_length=50, blank=True, default="")
+    stat_certified_instructors = models.CharField(max_length=50, blank=True, default="")
 
     # 4. Contact & Location
-    phone = models.CharField(max_length=30, default="+254 700 123 456")
-    phone_secondary = models.CharField(max_length=30, blank=True, default="+254 733 987 654")
-    email = models.EmailField(default="info@belingsdriving.co.ke")
-    address = models.CharField(max_length=255, default="Belings Towers, 3rd Floor, Moi Avenue / Commercial Street, Nairobi, Kenya")
-    whatsapp_number = models.CharField(max_length=30, default="254700123456", help_text="Number in international format without + (e.g. 254700123456)")
-    opening_hours = models.CharField(max_length=255, default="Mon - Fri: 7:00 AM - 6:30 PM | Sat: 8:00 AM - 4:00 PM | Sun: Closed")
-    map_embed_url = models.TextField(blank=True, default="")
+    phone = models.CharField(max_length=30, blank=True, default="")
+    phone_secondary = models.CharField(max_length=30, blank=True, default="")
+    email = models.EmailField(blank=True, default="")
+    address = models.CharField(max_length=255, blank=True, default="")
+    whatsapp_number = models.CharField(max_length=30, blank=True, default="", help_text="Number in international format without + (e.g. 254700123456)")
+    whatsapp_enabled = models.BooleanField(default=True)
+    opening_hours = models.CharField(max_length=255, blank=True, default="")
 
     # 5. Social Links
-    facebook_url = models.URLField(blank=True, default="https://facebook.com/belingsdrivingschool")
-    twitter_url = models.URLField(blank=True, default="https://twitter.com/belingsdriving")
-    instagram_url = models.URLField(blank=True, default="https://instagram.com/belingsdrivingschool")
-    linkedin_url = models.URLField(blank=True, default="https://linkedin.com/company/belingsdrivingschool")
-    youtube_url = models.URLField(blank=True, default="https://youtube.com/@belingsdrivingschool")
+    facebook_url = models.URLField(blank=True, default="")
+    facebook_enabled = models.BooleanField(default=True)
+    twitter_url = models.URLField(blank=True, default="")
+    twitter_enabled = models.BooleanField(default=True)
+    instagram_url = models.URLField(blank=True, default="")
+    instagram_enabled = models.BooleanField(default=True)
+    linkedin_url = models.URLField(blank=True, default="")
+    linkedin_enabled = models.BooleanField(default=True)
+    youtube_url = models.URLField(blank=True, default="")
+    youtube_enabled = models.BooleanField(default=True)
+    tiktok_url = models.URLField(blank=True, default="")
+    tiktok_enabled = models.BooleanField(default=True)
+    telegram_url = models.URLField(blank=True, default="")
+    telegram_enabled = models.BooleanField(default=True)
 
     # 6. Accreditation & Footer
-    ntsa_accreditation_note = models.CharField(max_length=255, default="Fully Accredited by the National Transport and Safety Authority (NTSA) - BDS/NTSA/2024/098")
-    footer_about_text = models.TextField(default="Accredited driver training academy cultivating safe, skilled, and licensed drivers through modern pedagogy and defensive motoring skills.")
-    copyright_text = models.CharField(max_length=150, default="Belings Driving School. All Rights Reserved.")
+    ntsa_accreditation_note = models.CharField(max_length=255, blank=True, default="")
+    footer_about_text = models.TextField(blank=True, default="")
+    copyright_text = models.CharField(max_length=150, blank=True, default="")
 
     # 7. SEO Configuration
-    meta_title = models.CharField(max_length=150, default="Belings Driving School - NTSA Accredited Academy in Kenya")
-    meta_description = models.TextField(default="Learn safe, defensive driving with certified instructors, modern dual-pedal fleet, and flexible schedules in Kenya.")
+    meta_title = models.CharField(max_length=150, blank=True, default="Belings Driving School")
+    meta_description = models.TextField(blank=True, default="")
     og_image = models.ImageField(upload_to=safe_upload_path, validators=[validate_image_file], blank=True, null=True)
     indexing_enabled = models.BooleanField(default=True, help_text="Allow search engines to index this website")
 
@@ -124,6 +154,16 @@ class SiteSettings(models.Model):
     currency_code = models.CharField(max_length=10, default="KES")
     currency_symbol = models.CharField(max_length=10, default="KES ")
     timezone = models.CharField(max_length=50, default="Africa/Nairobi")
+    session_timeout_minutes = models.PositiveIntegerField(default=15, help_text="Auto logout timeout in minutes after inactivity (default 15)")
+    home_gallery_count = models.PositiveIntegerField(default=6, help_text="Number of photos shown in home gallery")
+    home_gallery_show_tabs = models.BooleanField(default=True, help_text="Show category filter tabs on the home gallery")
+    home_gallery_featured_first = models.BooleanField(default=True, help_text="Show featured gallery photos first")
+    gallery_layout_size = models.CharField(
+        max_length=10,
+        choices=[('LARGE', 'Large (3 Columns, Big Cards)'), ('MEDIUM', 'Medium (4 Columns, Compact)')],
+        default='LARGE',
+        help_text="Gallery card layout size on public pages"
+    )
     lesson_duration_minutes = models.PositiveIntegerField(default=60, help_text="Standard lesson duration in minutes")
     cancellation_window_hours = models.PositiveIntegerField(default=24, help_text="Hours notice required for lesson cancellation without charge")
     max_lessons_per_day = models.PositiveIntegerField(default=2, help_text="Maximum lessons a student can book in one day")
@@ -145,30 +185,50 @@ class SiteSettings(models.Model):
         return f"{self.school_name} Configuration"
 
     def clean(self):
-        if not self.pk and SiteSettings.objects.exists():
+        existing = SiteSettings.objects.exclude(pk=self.pk).first()
+        if existing:
             raise ValidationError("There can only be one SiteSettings instance.")
 
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
-        cache.delete(self.CACHE_KEY)
 
     @classmethod
     def load(cls):
-        settings_obj = cache.get(cls.CACHE_KEY)
-        if not settings_obj:
-            settings_obj, created = cls.objects.get_or_create(pk=1)
-            cache.set(cls.CACHE_KEY, settings_obj, timeout=3600)
-        return settings_obj
+        obj = cls.objects.first()
+        if not obj:
+            obj = cls.objects.create(pk=1)
+        return obj
+
+    @property
+    def overlay_rgba(self):
+        return hex_to_rgba(self.hero_overlay_color, self.hero_overlay_opacity)
+
+    @property
+    def hero_overlay_rgba(self):
+        return self.overlay_rgba
+
+    @property
+    def cta_banner_tag(self):
+        return self.cta_banner_badge
+
+    @property
+    def cta_banner_subtitle(self):
+        return self.cta_banner_desc
 
 
 class HeroSlide(models.Model):
-    """Multiple orderable hero slider slides with on/off toggle."""
+    """Multiple orderable hero slider slides with on/off toggle and custom overlay."""
     title = models.CharField(max_length=200)
     subtitle = models.TextField(blank=True)
     image = models.ImageField(upload_to=safe_upload_path, validators=[validate_image_file], blank=True, null=True)
-    cta_text = models.CharField(max_length=50, default="Enroll Now")
-    cta_link = models.CharField(max_length=100, default="/enroll/")
+    image_large = models.ImageField(upload_to=safe_upload_path, blank=True, null=True)
+    overlay_enabled = models.BooleanField(default=False, help_text="Enable dark tint overlay on slide")
+    overlay_color = models.CharField(max_length=20, default="#000000", help_text="Overlay color hex (e.g. #000000)")
+    overlay_opacity = models.PositiveSmallIntegerField(default=0, help_text="Overlay opacity (0 to 70%)")
+    text_panel_enabled = models.BooleanField(default=False, help_text="Display text inside a semi-transparent panel for readability")
+    cta_text = models.CharField(max_length=50, blank=True, default="Enroll Now")
+    cta_link = models.CharField(max_length=100, blank=True, default="/enroll/")
     order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -180,6 +240,27 @@ class HeroSlide(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def large_url(self):
+        if self.image_large:
+            return self.image_large.url
+        return self.image.url if self.image else ''
+
+    @property
+    def overlay_rgba(self):
+        return hex_to_rgba(self.overlay_color, self.overlay_opacity)
+
+    def save(self, *args, **kwargs):
+        if self.image and not getattr(self.image, '_committed', True):
+            try:
+                from .image_utils import generate_image_variants
+                variants = generate_image_variants(self.image)
+                large_file = variants['large_file']
+                self.image_large.save(large_file.name, large_file, save=False)
+            except Exception:
+                pass
+        super().save(*args, **kwargs)
 
 
 class WhyChooseUsItem(models.Model):
@@ -261,6 +342,48 @@ class Testimonial(models.Model):
         return f"{self.name} - {self.course_taken}"
 
 
+class GalleryCategory(models.Model):
+    name = models.CharField(max_length=100, help_text="e.g. Practical, Theory, Fleet, Classroom, Events")
+    slug = models.SlugField(max_length=120, unique=True, blank=True)
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', 'name']
+        verbose_name = "Gallery Category"
+        verbose_name_plural = "Gallery Categories"
+
+    DEFAULT_CATEGORIES = [
+        ('Practical', 'practical', 1),
+        ('Theory', 'theory', 2),
+        ('Classroom', 'classroom', 3),
+        ('Fleet', 'fleet', 4),
+        ('Events', 'events', 5),
+    ]
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from django.utils.text import slugify
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def ensure_defaults(cls):
+        from django.db import IntegrityError
+        for name, slug, order in cls.DEFAULT_CATEGORIES:
+            try:
+                cls.objects.get_or_create(
+                    slug=slug,
+                    defaults={'name': name, 'order': order, 'is_active': True}
+                )
+            except IntegrityError:
+                pass
+        return cls.objects.all().order_by('order', 'name')
+
+
 class GalleryImage(models.Model):
     CATEGORY_CHOICES = [
         ('practical', 'Practical Lessons'),
@@ -272,9 +395,13 @@ class GalleryImage(models.Model):
 
     title = models.CharField(max_length=150)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='practical')
+    category_obj = models.ForeignKey(GalleryCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='images')
     image = models.ImageField(upload_to=safe_upload_path, validators=[validate_image_file])
+    image_grid = models.ImageField(upload_to=safe_upload_path, blank=True, null=True)
+    image_large = models.ImageField(upload_to=safe_upload_path, blank=True, null=True)
     caption = models.CharField(max_length=255, blank=True)
     alt_text = models.CharField(max_length=200, blank=True, help_text="Accessibility alt text for screen readers")
+    is_featured_home = models.BooleanField(default=True, help_text="Show in homepage gallery section")
     order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -284,12 +411,50 @@ class GalleryImage(models.Model):
         verbose_name = "Gallery Image"
         verbose_name_plural = "Gallery Images"
 
+    @property
+    def is_featured(self):
+        return self.is_featured_home
+
+    @property
+    def grid_url(self):
+        if self.image_grid:
+            return self.image_grid.url
+        return self.image.url if self.image else ''
+
+    @property
+    def large_url(self):
+        if self.image_large:
+            return self.image_large.url
+        return self.image.url if self.image else ''
+
+    @property
+    def category_slug(self):
+        if self.category_obj and self.category_obj.slug:
+            return self.category_obj.slug
+        return self.category or 'practical'
+
+    @property
+    def category_label(self):
+        if self.category_obj and self.category_obj.name:
+            return self.category_obj.name
+        return self.get_category_display()
+
     def __str__(self):
-        return f"{self.title} ({self.get_category_display()})"
+        return f"{self.title} ({self.category_label})"
 
     def save(self, *args, **kwargs):
         if not self.alt_text:
             self.alt_text = self.title
+        if self.image and (not self.image_grid or not getattr(self.image, '_committed', True)):
+            try:
+                from .image_utils import generate_image_variants
+                variants = generate_image_variants(self.image)
+                grid_file = variants['grid_file']
+                large_file = variants['large_file']
+                self.image_grid.save(grid_file.name, grid_file, save=False)
+                self.image_large.save(large_file.name, large_file, save=False)
+            except Exception:
+                pass
         super().save(*args, **kwargs)
 
 
@@ -354,3 +519,177 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f"[{self.timestamp:%Y-%m-%d %H:%M}] {self.user} - {self.action}"
+
+
+class EmailSettings(models.Model):
+    is_enabled = models.BooleanField(default=False, help_text="Enable custom SMTP email sending")
+    smtp_host = models.CharField(max_length=255, blank=True, default='smtp.gmail.com')
+    smtp_port = models.PositiveIntegerField(default=587)
+    security_protocol = models.CharField(
+        max_length=10,
+        choices=[('TLS', 'STARTTLS (Port 587)'), ('SSL', 'SSL/TLS (Port 465)'), ('NONE', 'None (Port 25)')],
+        default='TLS'
+    )
+    smtp_username = models.CharField(max_length=255, blank=True)
+    smtp_password_encrypted = models.TextField(blank=True)
+    default_from_name = models.CharField(max_length=150, default='Belings Driving School')
+    default_from_email = models.EmailField(default='info@belingsdriving.co.ke')
+    reply_to_email = models.EmailField(blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Email SMTP Settings"
+        verbose_name_plural = "Email SMTP Settings"
+
+    @property
+    def security(self):
+        return self.security_protocol
+
+    @property
+    def reply_to(self):
+        return self.reply_to_email
+
+    @property
+    def encrypted_password(self):
+        return self.smtp_password_encrypted
+
+    @property
+    def has_password(self):
+        return bool(self.smtp_password_encrypted and self.smtp_password_encrypted.strip())
+
+    def set_password(self, raw_password):
+        from .encryption import encrypt_value
+        self.smtp_password_encrypted = encrypt_value(raw_password) if raw_password else ''
+
+    def get_password(self):
+        from .encryption import decrypt_value
+        return decrypt_value(self.smtp_password_encrypted)
+
+    @classmethod
+    def load(cls):
+        obj = cls.objects.first()
+        if not obj:
+            obj = cls.objects.create(pk=1)
+        return obj
+
+
+class EmailLog(models.Model):
+    sender = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_emails')
+    recipient = models.EmailField()
+    subject = models.CharField(max_length=255)
+    body = models.TextField()
+    status = models.CharField(max_length=20, choices=[('SENT', 'Sent'), ('FAILED', 'Failed')], default='SENT')
+    error_message = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Email Log"
+        verbose_name_plural = "Email Logs"
+
+    @property
+    def sent_at(self):
+        return self.created_at
+
+    def __str__(self):
+        return f"To {self.recipient}: {self.subject} ({self.status})"
+
+
+class CustomSocialLink(models.Model):
+    label = models.CharField(max_length=60, help_text="e.g. TikTok, Telegram, Discord")
+    url = models.URLField()
+    icon = models.CharField(max_length=50, blank=True, default="bi-link-45deg", help_text="Bootstrap Icons class (e.g. bi-tiktok, bi-telegram, bi-whatsapp)")
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', 'label']
+        verbose_name = "Custom Social Link"
+        verbose_name_plural = "Custom Social Links"
+
+    @property
+    def icon_class(self):
+        return self.icon
+
+    def __str__(self):
+        return self.label
+
+
+class HomeSectionManager(models.Manager):
+    def ensure_defaults(self):
+        return self.model.ensure_defaults()
+
+
+class HomeSection(models.Model):
+    DEFAULT_SECTIONS = [
+        ('hero', 'Hero Slider / Banner', 1),
+        ('stats', 'Statistics Counters', 2),
+        ('about', 'About Us & Mission', 3),
+        ('courses', 'Featured Courses', 4),
+        ('branches', 'Campus Branches & Locations', 5),
+        ('gallery', 'Photo Gallery Showcase', 6),
+        ('why_choose_us', 'Why Choose Belings', 7),
+        ('testimonials', 'Student Testimonials', 8),
+        ('instructors', 'Instructors Preview', 9),
+        ('faqs', 'Frequently Asked Questions', 10),
+        ('cta', 'Enrollment Call to Action', 11),
+        ('contact', 'Contact & Location Summary', 12),
+    ]
+
+    SECTION_CHOICES = [
+        ('hero', 'Hero Slider / Banner'),
+        ('stats', 'Statistics Counters'),
+        ('about', 'About Us & Mission'),
+        ('courses', 'Featured Courses'),
+        ('branches', 'Campus Branches & Locations'),
+        ('gallery', 'Photo Gallery Showcase'),
+        ('why_choose_us', 'Why Choose Belings'),
+        ('why_us', 'Why Choose Belings'),
+        ('testimonials', 'Student Testimonials'),
+        ('instructors', 'Instructors Preview'),
+        ('faqs', 'Frequently Asked Questions'),
+        ('cta', 'Enrollment Call to Action'),
+        ('contact', 'Contact & Location Summary'),
+    ]
+
+    section_key = models.CharField(max_length=50, unique=True, choices=SECTION_CHOICES)
+    title = models.CharField(max_length=100)
+    order = models.PositiveIntegerField(default=0)
+    is_enabled = models.BooleanField(default=True)
+
+    objects = HomeSectionManager()
+
+    class Meta:
+        ordering = ['order', 'title']
+        verbose_name = "Homepage Section"
+        verbose_name_plural = "Homepage Sections"
+
+    @classmethod
+    def ensure_defaults(cls):
+        """
+        Idempotently create the 12 standard homepage section rows if missing.
+        Uses get_or_create so it is safe under concurrent requests, never
+        overwrites an admin's existing order or visibility settings, and never
+        creates any marketing content.
+        """
+        from django.db import IntegrityError
+        # Normalize any legacy 'why_us' key to 'why_choose_us' if 'why_choose_us' does not exist yet
+        if cls.objects.filter(section_key='why_us').exists() and not cls.objects.filter(section_key='why_choose_us').exists():
+            cls.objects.filter(section_key='why_us').update(section_key='why_choose_us')
+
+        for key, title, default_order in cls.DEFAULT_SECTIONS:
+            try:
+                cls.objects.get_or_create(
+                    section_key=key,
+                    defaults={
+                        'title': title,
+                        'order': default_order,
+                        'is_enabled': True,
+                    }
+                )
+            except IntegrityError:
+                pass
+        return cls.objects.all().order_by('order', 'id')
+
+    def __str__(self):
+        return f"{self.title} ({'Visible' if self.is_enabled else 'Hidden'})"

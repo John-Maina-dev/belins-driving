@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Site Management{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="content-card" style="max-width: 640px;">
+  <form method="post">
+    {% csrf_token %}
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">Category Name <span class="text-danger">*</span></label>
+        {{ form.name }}
+        {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors|striptags }}</div>{% endif %}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Slug</label>
+        {{ form.slug }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label fw-semibold">Order</label>
+        {{ form.order }}
+      </div>
+      <div class="col-12">
+        <div class="form-check">
+          {{ form.is_active }}
+          <label class="form-check-label fw-semibold">Active</label>
+        </div>
+      </div>
+    </div>
+    <div class="mt-4 d-flex gap-2">
+      <button type="submit" class="btn btn-primary fw-bold px-4">Save Category</button>
+      <a href="{% url 'manage:gallery_categories_list' %}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+

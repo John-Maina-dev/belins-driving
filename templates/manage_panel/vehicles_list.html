@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Training Vehicles - Site Management{% endblock %}
+{% block page_title %}Training Fleet Vehicles{% endblock %}
+{% block page_subtitle %}Manage dual-control training vehicles by branch{% endblock %}
+
+{% block content %}
+<div class="content-card">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="fw-bold mb-0">Training Vehicles</h5>
+    <a href="{% url 'manage:vehicle_create' %}" class="btn btn-primary btn-sm fw-bold">
+      <i class="bi bi-plus-lg me-1"></i> Add Vehicle
+    </a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Plate Number</th>
+          <th>Make & Model</th>
+          <th>License Category</th>
+          <th>Transmission</th>
+          <th>Branch</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in vehicles %}
+        <tr>
+          <td class="fw-bold font-monospace">{{ v.plate_number }}</td>
+          <td>{{ v.make_model }}</td>
+          <td><span class="badge bg-light text-dark border">Category {{ v.license_category }}</span></td>
+          <td>{{ v.get_transmission_display }}</td>
+          <td>{{ v.branch.name|default:"All Branches" }}</td>
+          <td>
+            {% if v.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}
+          </td>
+          <td class="text-end">
+            <a href="{% url 'manage:vehicle_edit' v.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+            <a href="{% url 'manage:vehicle_delete' v.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center py-4 text-muted">No training vehicles added yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+

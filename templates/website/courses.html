@@ -44,6 +44,11 @@
       {% for course in courses %}
       <div class="col-md-6 col-lg-4">
         <div class="course-card">
+          {% if course.image %}
+          <div class="course-card-media rounded-top">
+            <img src="{{ course.image.url }}" alt="{{ course.name }}" width="800" height="450" loading="lazy">
+          </div>
+          {% endif %}
           <div class="course-card-header">
             <div class="course-icon-badge">
               <i class="bi {{ course.icon_class|default:'bi-car-front' }}"></i>
@@ -108,10 +113,12 @@
       </p>
       <div>
         <a href="{% url 'website:contact' %}" class="btn btn-brand-primary me-2">Speak to an Advisor</a>
-        <a href="https://wa.me/{{ site_settings.whatsapp_number|default:'254700123456' }}?text=Hello%20Belings%20Driving%20School,%20which%20course%20should%20I%20choose?"
-           class="btn btn-whatsapp text-white" target="_blank" rel="noopener">
+        {% if site_settings.whatsapp_number and site_settings.whatsapp_enabled %}
+        <a href="https://wa.me/{{ site_settings.whatsapp_number }}"
+           class="btn btn-whatsapp text-white" target="_blank" rel="noopener noreferrer">
           <i class="bi bi-whatsapp"></i> WhatsApp Us
         </a>
+        {% endif %}
       </div>
     </div>
 

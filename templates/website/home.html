@@ -1,578 +1,809 @@
 {% extends 'base_public.html' %}
 {% load static humanize %}
 
-{% block title %}Belings Driving School - NTSA Accredited Driving School in Kenya{% endblock %}
+{% block title %}{{ site_settings.school_name|default:"Belings Driving School" }}{% endblock %}
 
 {% block content %}
 
-<!-- =========================================================================
-     1. HERO AREA
-     ========================================================================= -->
-<section class="hero-section">
-  <div class="container position-relative" style="z-index: 2;">
-    <div class="row align-items-center g-5">
-      <div class="col-lg-7">
-        <div class="hero-badge">
-          <i class="bi bi-shield-check"></i> {{ site_settings.ntsa_accreditation_note|default:"NTSA Accredited Driving School" }}
-        </div>
-        <h1 class="hero-title">
-          {{ site_settings.hero_title|default:"Drive with Confidence. Pass Your Test on First Attempt." }}
-        </h1>
-        <p class="hero-subtitle">
-          {{ site_settings.hero_subtitle|default:"Learn safe, responsible, and defensive driving techniques with Kenya's certified instructors, modern dual-control training fleet, and flexible class timings." }}
-        </p>
+{% if not active_section_keys %}
+<!-- Clean Empty State when no homepage sections/content have been configured yet -->
+<section class="py-5 bg-white" style="min-height: 65vh; display: flex; align-items: center;">
+  <div class="container text-center py-5">
+    <div class="navbar-brand-placeholder mx-auto mb-3" style="width: 64px; height: 64px; font-size: 2rem;">
+      <i class="bi bi-steering-wheel"></i>
+    </div>
+    <h1 class="font-heading fw-bold mb-3">{{ site_settings.school_name|default:"Belings Driving School" }}</h1>
+    {% if site_settings.tagline %}
+    <p class="lead text-muted mb-4">{{ site_settings.tagline }}</p>
+    {% endif %}
+    <div class="d-flex justify-content-center gap-3">
+      {% if not user.is_authenticated %}
+      <a href="{% url 'accounts:login' %}" class="btn btn-brand-primary px-4 py-2">
+        <i class="bi bi-box-arrow-in-right me-1"></i> Login
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% else %}
 
-        <div class="d-flex flex-wrap gap-3 align-items-center">
-          <a href="{% url 'website:enroll' %}" class="btn btn-brand-secondary btn-lg px-4 py-3">
-            <i class="bi bi-person-plus-fill me-2"></i> Enroll Now
-          </a>
-          <a href="{% url 'website:courses' %}" class="btn btn-outline-light btn-lg px-4 py-3">
-            <i class="bi bi-compass me-2"></i> Explore Courses
-          </a>
-          <a href="https://wa.me/{{ site_settings.whatsapp_number|default:'254700123456' }}?text=Hello%20Belings%20Driving%20School,%20I%20would%20like%20to%20enroll."
-             class="btn btn-whatsapp btn-lg px-4 py-3 text-white" target="_blank" rel="noopener">
-            <i class="bi bi-whatsapp"></i> Chat on WhatsApp
-          </a>
-        </div>
+{% for section_key in active_section_keys %}
 
-        <!-- Key Trust Highlights -->
-        <div class="hero-highlights">
-          <div class="hero-highlight-item">
-            <i class="bi bi-check-circle-fill"></i>
-            <span>NTSA Smart DL Ready</span>
+  {% if section_key == 'hero' %}
+  <!-- =========================================================================
+       HERO SECTION (Pure Natural Image Colors; Optional Admin Overlay Only)
+       ========================================================================= -->
+  {% if slides %}
+  <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+    {% if slides|length > 1 %}
+    <div class="carousel-indicators">
+      {% for slide in slides %}
+      <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ forloop.counter0 }}"
+              {% if forloop.first %}class="active" aria-current="true"{% endif %}
+              aria-label="Slide {{ forloop.counter }}"></button>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <div class="carousel-inner">
+      {% for slide in slides %}
+      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+        <div class="hero-section hero-text-shadow">
+        {% if slide.image %}
+        <img src="{{ slide.large_url }}" alt="{{ slide.title }}" class="hero-bg-media" {% if not forloop.first %}loading="lazy"{% else %}fetchpriority="high"{% endif %}>
+        {% elif site_settings.hero_image %}
+        <img src="{{ site_settings.hero_image.url }}" alt="{{ slide.title }}" class="hero-bg-media" {% if not forloop.first %}loading="lazy"{% else %}fetchpriority="high"{% endif %}>
+        {% endif %}
+        {% if slide.overlay_enabled %}
+        <div class="hero-overlay-layer" style="background-color: {{ slide.overlay_rgba }};"></div>
+        {% endif %}
+        <div class="container position-relative" style="z-index: 2;">
+          <div class="row align-items-center g-5 py-3">
+            <div class="{% if all_courses %}col-lg-7{% else %}col-lg-9{% endif %}">
+              <div class="{% if slide.text_panel_enabled %}hero-text-panel{% endif %}">
+                {% if site_settings.ntsa_accreditation_note %}
+                <div class="hero-badge">
+                  <i class="bi bi-shield-check"></i> {{ site_settings.ntsa_accreditation_note }}
+                </div>
+                {% endif %}
+                <h1 class="hero-title">{{ slide.title }}</h1>
+                {% if slide.subtitle %}
+                <p class="hero-subtitle">{{ slide.subtitle }}</p>
+                {% endif %}
+
+                <div class="d-flex flex-wrap gap-3 align-items-center">
+                  {% if slide.cta_text %}
+                  <a href="{{ slide.cta_link|default:'/enroll/' }}" class="btn btn-brand-secondary btn-lg px-4 py-3">
+                    <i class="bi bi-person-plus-fill me-2"></i> {{ slide.cta_text }}
+                  </a>
+                  {% endif %}
+                  {% if all_courses %}
+                  <a href="{% url 'website:courses' %}" class="btn btn-outline-light btn-lg px-4 py-3">
+                    <i class="bi bi-compass me-2"></i> Explore Courses
+                  </a>
+                  {% endif %}
+                  {% if site_settings.whatsapp_number and site_settings.whatsapp_enabled %}
+                  <a href="https://wa.me/{{ site_settings.whatsapp_number }}"
+                     class="btn btn-whatsapp btn-lg px-4 py-3 text-white" target="_blank" rel="noopener noreferrer">
+                    <i class="bi bi-whatsapp"></i> Chat on WhatsApp
+                  </a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            {% if all_courses %}
+            <div class="col-lg-5">
+              <div class="card border-0 shadow-lg rounded-4 p-4 text-dark bg-white">
+                <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                  <h4 class="mb-0 text-primary font-heading" style="font-size: 1.25rem;">
+                    <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Quick Admission
+                  </h4>
+                  <span class="badge bg-warning text-dark px-2 py-1 font-monospace">Online Enrollment</span>
+                </div>
+                <form action="{% url 'website:enroll' %}" method="get">
+                  {% if branches %}
+                  <div class="mb-3">
+                    <label class="form-label small fw-bold">Select Branch</label>
+                    <select class="form-select" name="branch">
+                      <option value="">-- Choose Branch --</option>
+                      {% for b in branches %}
+                      <option value="{{ b.id }}">{{ b.name }} ({{ b.town }})</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  {% endif %}
+                  <div class="mb-3">
+                    <label class="form-label small fw-bold">Select Driving Course</label>
+                    <select class="form-select" name="course" required>
+                      <option value="">-- Choose Driving Category --</option>
+                      {% for course in all_courses %}
+                      <option value="{{ course.slug }}">{{ course.name }} (KES {{ course.fee|intcomma }})</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-brand-primary w-100 py-2 fw-bold">
+                    Proceed to Registration <i class="bi bi-arrow-right ms-1"></i>
+                  </button>
+                </form>
+                {% if site_settings.phone %}
+                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top small text-muted">
+                  <span><i class="bi bi-headset text-primary me-1"></i> Helpline:</span>
+                  <a href="tel:{{ site_settings.phone }}" class="fw-bold text-dark">{{ site_settings.phone }}</a>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+            {% endif %}
           </div>
-          <div class="hero-highlight-item">
-            <i class="bi bi-check-circle-fill"></i>
-            <span>Free Interim License Assist</span>
-          </div>
-          <div class="hero-highlight-item">
-            <i class="bi bi-check-circle-fill"></i>
-            <span>Flexible Fee Installments</span>
-          </div>
-          <div class="hero-highlight-item">
-            <i class="bi bi-check-circle-fill"></i>
-            <span>Dual-Pedal Safe Fleet</span>
+        </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% if slides|length > 1 %}
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    </button>
+    {% endif %}
+  </div>
+  {% else %}
+  <section class="hero-section hero-text-shadow" {% if site_settings.hero_image %}style="background-image: url('{{ site_settings.hero_image.url }}');"{% endif %}>
+    {% if site_settings.hero_overlay_enabled %}
+    <div class="hero-overlay-layer" style="background-color: {{ site_settings.hero_overlay_rgba }};"></div>
+    {% endif %}
+    <div class="container position-relative" style="z-index: 2;">
+      <div class="row align-items-center g-5">
+        <div class="{% if all_courses %}col-lg-7{% else %}col-lg-9{% endif %}">
+          <div class="{% if site_settings.hero_text_panel_enabled %}hero-text-panel{% endif %}">
+            {% if site_settings.ntsa_accreditation_note %}
+            <div class="hero-badge">
+              <i class="bi bi-shield-check"></i> {{ site_settings.ntsa_accreditation_note }}
+            </div>
+            {% endif %}
+            {% if site_settings.hero_title %}
+            <h1 class="hero-title">{{ site_settings.hero_title }}</h1>
+            {% endif %}
+            {% if site_settings.hero_subtitle %}
+            <p class="hero-subtitle">{{ site_settings.hero_subtitle }}</p>
+            {% endif %}
+
+            <div class="d-flex flex-wrap gap-3 align-items-center">
+              {% if site_settings.hero_cta_text %}
+              <a href="{% url 'website:enroll' %}" class="btn btn-brand-secondary btn-lg px-4 py-3">
+                <i class="bi bi-person-plus-fill me-2"></i> {{ site_settings.hero_cta_text }}
+              </a>
+              {% endif %}
+              {% if all_courses %}
+              <a href="{% url 'website:courses' %}" class="btn btn-outline-light btn-lg px-4 py-3">
+                <i class="bi bi-compass me-2"></i> Explore Courses
+              </a>
+              {% endif %}
+              {% if site_settings.whatsapp_number and site_settings.whatsapp_enabled %}
+              <a href="https://wa.me/{{ site_settings.whatsapp_number }}"
+                 class="btn btn-whatsapp btn-lg px-4 py-3 text-white" target="_blank" rel="noopener noreferrer">
+                <i class="bi bi-whatsapp"></i> Chat on WhatsApp
+              </a>
+              {% endif %}
+            </div>
           </div>
         </div>
       </div>
+    </div>
+  </section>
+  {% endif %}
+  {% endif %}
 
-      <!-- Hero Card / Quick Application Card -->
-      <div class="col-lg-5">
-        <div class="card border-0 shadow-lg rounded-4 p-4 text-dark bg-white">
-          <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-            <h4 class="mb-0 text-primary font-heading" style="font-size: 1.25rem;">
-              <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Quick Admission
-            </h4>
-            <span class="badge bg-warning text-dark px-2 py-1 font-monospace">Intakes Open</span>
+  {% if section_key == 'stats' %}
+  <!-- =========================================================================
+       STATS COUNTERS (Only rendered when admin has set stat values)
+       ========================================================================= -->
+  <section class="stats-section">
+    <div class="container">
+      <div class="row g-4 text-center justify-content-center">
+        {% if site_settings.stat_students %}
+        <div class="col-6 col-lg-3">
+          <div class="stat-item">
+            <div class="stat-number">{{ site_settings.stat_students }}</div>
+            <div class="stat-label">Licensed Students Trained</div>
           </div>
-          <p class="text-muted small mb-3">
-            Register in under 2 minutes. Choose your preferred category and schedule below:
-          </p>
-          <form action="{% url 'website:enroll' %}" method="get">
-            <div class="mb-3">
-              <label class="form-label small fw-bold">Select Driving Category</label>
-              <select class="form-select" name="course" required>
-                <option value="">-- Choose Driving Category --</option>
-                {% for course in all_courses %}
-                <option value="{{ course.slug }}">{{ course.name }} (KES {{ course.fee|intcomma }})</option>
+        </div>
+        {% endif %}
+        {% if site_settings.stat_pass_rate %}
+        <div class="col-6 col-lg-3">
+          <div class="stat-item">
+            <div class="stat-number">{{ site_settings.stat_pass_rate }}</div>
+            <div class="stat-label">First-Time Pass Rate</div>
+          </div>
+        </div>
+        {% endif %}
+        {% if site_settings.stat_experience_years %}
+        <div class="col-6 col-lg-3">
+          <div class="stat-item">
+            <div class="stat-number">{{ site_settings.stat_experience_years }}</div>
+            <div class="stat-label">Years of Excellence</div>
+          </div>
+        </div>
+        {% endif %}
+        {% if site_settings.stat_certified_instructors %}
+        <div class="col-6 col-lg-3">
+          <div class="stat-item">
+            <div class="stat-number">{{ site_settings.stat_certified_instructors }}</div>
+            <div class="stat-label">Certified Instructors</div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if section_key == 'about' %}
+  <!-- =========================================================================
+       ABOUT SUMMARY SECTION
+       ========================================================================= -->
+  <section class="py-5 bg-white">
+    <div class="container py-lg-4">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-12">
+          {% if site_settings.about_section_tag %}
+          <span class="section-tag">{{ site_settings.about_section_tag }}</span>
+          {% endif %}
+          {% if site_settings.about_section_title %}
+          <h2 class="section-title">{{ site_settings.about_section_title }}</h2>
+          {% endif %}
+          {% if site_settings.about_section_text %}
+          <p class="text-secondary lead">{{ site_settings.about_section_text }}</p>
+          {% elif about_page and about_page.content %}
+          <div class="text-secondary">{{ about_page.content|linebreaks }}</div>
+          {% endif %}
+          <div class="d-flex gap-3 mt-4">
+            <a href="{% url 'website:about' %}" class="btn btn-brand-primary">
+              Read More <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if section_key == 'courses' %}
+  <!-- =========================================================================
+       COURSES OVERVIEW CARDS
+       ========================================================================= -->
+  <section class="py-5" style="background-color: var(--body-bg);">
+    <div class="container py-lg-4">
+      <div class="section-header">
+        <span class="section-tag">Driving Programs</span>
+        <h2 class="section-title">Available Driving Courses</h2>
+      </div>
+
+      <div class="row g-4">
+        {% for course in featured_courses %}
+        <div class="col-md-6 col-lg-4">
+          <div class="course-card">
+            {% if course.image %}
+            <div class="course-card-media rounded-top">
+              <img src="{{ course.image.url }}" alt="{{ course.name }}" width="800" height="450" loading="lazy">
+            </div>
+            {% endif %}
+            <div class="course-card-header">
+              <div class="course-icon-badge">
+                <i class="bi {{ course.icon_class|default:'bi-car-front' }}"></i>
+              </div>
+              <span class="course-category-badge">{{ course.category_display|default:course.get_license_category_display }}</span>
+            </div>
+            <div class="course-card-body">
+              <h4 class="font-heading mb-2" style="font-size: 1.25rem;">
+                <a href="{{ course.get_absolute_url }}">{{ course.name }}</a>
+              </h4>
+              <p class="text-muted small mb-3">{{ course.short_description|truncatewords:20 }}</p>
+
+              <div class="bg-light p-2 rounded small mb-3 d-flex justify-content-between text-secondary">
+                <span><i class="bi bi-clock me-1 text-primary"></i> {{ course.duration }}</span>
+                <span><i class="bi bi-speedometer2 me-1 text-primary"></i> {{ course.practical_hours }}h Practical</span>
+              </div>
+
+              <div class="d-flex align-items-baseline justify-content-between pt-2 border-top">
+                <div>
+                  <span class="text-muted small d-block">Course Fee</span>
+                  <span class="course-price-tag">KES {{ course.fee|intcomma }}</span>
+                </div>
+                <a href="{% url 'website:enroll' %}?course={{ course.slug }}" class="btn btn-brand-secondary btn-sm">
+                  Enroll <i class="bi bi-chevron-right ms-1"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="text-center mt-5">
+        <a href="{% url 'website:courses' %}" class="btn btn-brand-primary btn-lg px-4">
+          Browse All Courses <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if section_key == 'branches' %}
+  <!-- =========================================================================
+       BRANCHES SECTION
+       ========================================================================= -->
+  <section class="py-5 bg-white">
+    <div class="container py-lg-4">
+      <div class="section-header">
+        <span class="section-tag">Campus Network</span>
+        <h2 class="section-title">Our Training Branches</h2>
+      </div>
+      <div class="row g-4">
+        {% for branch in branches %}
+        <div class="col-md-6 col-lg-4">
+          <div class="card border shadow-sm rounded-4 h-100 overflow-hidden">
+            {% if branch.image %}
+            <div class="branch-card-media">
+              <img src="{{ branch.image.url }}" alt="{{ branch.name }}" width="800" height="450" loading="lazy">
+            </div>
+            {% endif %}
+            <div class="p-4 d-flex flex-column h-100">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h5 class="font-heading text-primary mb-0">{{ branch.name }}</h5>
+                <span class="badge bg-light text-dark border">{{ branch.code }}</span>
+              </div>
+              {% if branch.town %}
+              <p class="small text-warning fw-bold mb-2"><i class="bi bi-pin-map-fill me-1"></i>{{ branch.town }}</p>
+              {% endif %}
+              {% if branch.address %}
+              <p class="small text-muted mb-2"><i class="bi bi-geo-alt me-1"></i>{{ branch.address }}</p>
+              {% endif %}
+              {% if branch.phone %}
+              <p class="small text-muted mb-2"><i class="bi bi-telephone me-1"></i><a href="tel:{{ branch.phone }}">{{ branch.phone }}</a></p>
+              {% endif %}
+              {% if branch.opening_hours %}
+              <p class="small text-muted mb-3"><i class="bi bi-clock me-1"></i>{{ branch.opening_hours }}</p>
+              {% endif %}
+              <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
+                <a href="{% url 'website:enroll' %}?branch={{ branch.id }}" class="btn btn-sm btn-brand-secondary">
+                  Enroll at Branch
+                </a>
+                {% if branch.has_map %}
+                <div class="d-flex gap-1">
+                  {% if branch.maps_open_url %}
+                  <a href="{{ branch.maps_open_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-secondary" title="Open {{ branch.name }} in Google Maps">
+                    <i class="bi bi-map"></i> Map
+                  </a>
+                  {% endif %}
+                  {% if branch.directions_url %}
+                  <a href="{{ branch.directions_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-secondary" title="Get directions to {{ branch.name }}">
+                    <i class="bi bi-signpost-split"></i> Directions
+                  </a>
+                  {% endif %}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if section_key == 'gallery' %}
+  <!-- =========================================================================
+       GALLERY / TRAINING IN ACTION SECTION (Large 4:3 Cards + Full-Screen Lightbox)
+       ========================================================================= -->
+  <section class="py-5" style="background-color: var(--body-bg);" id="homeGallerySection">
+    <div class="container py-lg-4">
+      <div class="section-header">
+        <span class="section-tag">Training in Action</span>
+        <h2 class="section-title">{{ site_settings.home_gallery_title|default:"Campus & Practical Gallery" }}</h2>
+        {% if site_settings.home_gallery_subtitle %}
+        <p class="section-desc">{{ site_settings.home_gallery_subtitle }}</p>
+        {% endif %}
+      </div>
+
+      {% if site_settings.home_gallery_show_tabs and gallery_categories %}
+      <div class="d-flex flex-wrap gap-2 justify-content-center mb-4" id="homeGalleryTabs">
+        <button type="button" class="btn btn-sm btn-brand-primary px-3 py-2 home-gallery-tab active" data-category="all">
+          All
+        </button>
+        {% for cat in gallery_categories %}
+        <button type="button" class="btn btn-sm btn-outline-secondary bg-white px-3 py-2 home-gallery-tab" data-category="{{ cat.slug }}">
+          {{ cat.name }}
+        </button>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="row g-3" id="homeGalleryGrid">
+        {% for item in home_gallery_images %}
+        <div class="col-12 col-md-6 {% if site_settings.gallery_layout_size == 'MEDIUM' %}col-lg-3{% else %}col-lg-4{% endif %} home-gallery-item" data-category="{{ item.category_slug }}">
+          <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 gallery-thumbnail js-lightbox-trigger"
+               data-large-url="{{ item.large_url }}"
+               data-title="{{ item.title }}"
+               data-caption="{{ item.caption|default:item.title }}">
+            <div class="gallery-card-media">
+              {% if item.image %}
+              <img src="{{ item.grid_url }}"
+                   srcset="{{ item.grid_url }} 800w, {{ item.large_url }} 1600w"
+                   sizes="(max-width: 767px) 100vw, (max-width: 991px) 50vw, 33vw"
+                   width="800" height="600"
+                   alt="{{ item.alt_text|default:item.title }}"
+                   loading="lazy">
+              {% endif %}
+              <span class="position-absolute top-0 end-0 m-2 badge bg-dark bg-opacity-75">
+                {{ item.category_label }}
+              </span>
+            </div>
+            <div class="p-3 bg-white">
+              <h6 class="fw-bold mb-1 text-truncate text-dark">{{ item.title }}</h6>
+              {% if item.caption %}
+              <small class="text-muted d-block text-truncate">{{ item.caption }}</small>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="text-center mt-4">
+        <a href="{% url 'website:gallery' %}" class="btn btn-outline-brand">
+          View Full Gallery <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if section_key == 'why_choose_us' %}
+  <!-- =========================================================================
+       WHY CHOOSE US
+       ========================================================================= -->
+  <section class="py-5 bg-white">
+    <div class="container py-lg-4">
+      <div class="section-header">
+        <span class="section-tag">Why Choose Us</span>
+        {% if site_settings.why_choose_title %}
+        <h2 class="section-title">{{ site_settings.why_choose_title }}</h2>
+        {% endif %}
+        {% if site_settings.why_choose_desc %}
+        <p class="section-desc">{{ site_settings.why_choose_desc }}</p>
+        {% endif %}
+      </div>
+
+      <div class="row g-4">
+        {% for item in why_items %}
+        <div class="col-md-6 col-lg-3">
+          <div class="feature-box">
+            <div class="feature-icon-wrapper">
+              <i class="bi {{ item.icon_class|default:'bi-shield-lock-fill' }}"></i>
+            </div>
+            <h4 class="font-heading fs-5 mb-2">{{ item.title }}</h4>
+            <p class="text-muted small mb-0">{{ item.description }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if section_key == 'testimonials' %}
+  <!-- =========================================================================
+       TESTIMONIALS SECTION
+       ========================================================================= -->
+  <section class="py-5" style="background-color: var(--body-bg);">
+    <div class="container py-lg-4">
+      <div class="section-header">
+        <span class="section-tag">Student Reviews</span>
+        <h2 class="section-title">What Our Graduates Say</h2>
+      </div>
+
+      <div class="row g-4">
+        {% for testimonial in testimonials %}
+        <div class="col-md-6 col-lg-4">
+          <div class="testimonial-card">
+            <div>
+              <div class="testimonial-stars">
+                {% for i in "12345"|make_list %}
+                <i class="bi bi-star-fill"></i>
                 {% endfor %}
-              </select>
-            </div>
-            <div class="mb-3">
-              <label class="form-label small fw-bold">Preferred Shift</label>
-              <select class="form-select" name="shift">
-                <option value="morning">Morning Shift (8:00 AM - 11:00 AM)</option>
-                <option value="afternoon">Afternoon Shift (1:00 PM - 4:00 PM)</option>
-                <option value="evening">Evening Shift (4:30 PM - 7:00 PM)</option>
-                <option value="weekend">Weekend Intensive (Saturdays)</option>
-              </select>
-            </div>
-            <button type="submit" class="btn btn-brand-primary w-100 py-2 fw-bold">
-              Proceed to Registration <i class="bi bi-arrow-right ms-1"></i>
-            </button>
-          </form>
-          <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top small text-muted">
-            <span><i class="bi bi-headset text-primary me-1"></i> Helpline:</span>
-            <a href="tel:{{ site_settings.phone|default:'+254700123456' }}" class="fw-bold text-dark">{{ site_settings.phone|default:'+254 700 123 456' }}</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- =========================================================================
-     2. STATS COUNTERS
-     ========================================================================= -->
-<section class="stats-section">
-  <div class="container">
-    <div class="row g-4 text-center">
-      <div class="col-6 col-lg-3">
-        <div class="stat-item">
-          <div class="stat-number">{{ site_settings.stat_students|default:"12,500+" }}</div>
-          <div class="stat-label">Licensed Students Trained</div>
-        </div>
-      </div>
-      <div class="col-6 col-lg-3">
-        <div class="stat-item">
-          <div class="stat-number">{{ site_settings.stat_pass_rate|default:"98.5%" }}</div>
-          <div class="stat-label">NTSA First-Time Pass Rate</div>
-        </div>
-      </div>
-      <div class="col-6 col-lg-3">
-        <div class="stat-item">
-          <div class="stat-number">{{ site_settings.stat_experience_years|default:"12+" }}</div>
-          <div class="stat-label">Years of Excellence</div>
-        </div>
-      </div>
-      <div class="col-6 col-lg-3">
-        <div class="stat-item">
-          <div class="stat-number">{{ site_settings.stat_certified_instructors|default:"24+" }}</div>
-          <div class="stat-label">NTSA Certified Instructors</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- =========================================================================
-     3. SHORT ABOUT SECTION
-     ========================================================================= -->
-<section class="py-5 bg-white">
-  <div class="container py-lg-4">
-    <div class="row align-items-center g-5">
-      <div class="col-lg-6">
-        <div class="position-relative">
-          <div class="p-3 bg-light rounded-4 border shadow-sm">
-            <div class="ratio ratio-16x9 bg-secondary rounded-3 d-flex align-items-center justify-content-center text-white" style="background: linear-gradient(135deg, #020381, #1863dc);">
-              <div class="text-center p-4">
-                <i class="bi bi-car-front-fill display-3 text-warning mb-2"></i>
-                <h3 class="text-white font-heading">Belings Driving Academy</h3>
-                <p class="mb-0 text-white-50">Modern Training Vehicles & Highway Defensive Modules</p>
               </div>
+              <p class="testimonial-quote">"{{ testimonial.quote }}"</p>
             </div>
-          </div>
-          <div class="position-absolute bottom-0 start-0 translate-middle-y bg-warning text-dark p-3 rounded-3 shadow-lg ms-3 d-none d-sm-block">
-            <div class="fw-bold font-monospace"><i class="bi bi-award-fill"></i> NTSA CERTIFIED</div>
-            <div class="small">100% Curriculum Compliance</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-lg-6">
-        <span class="section-tag">About Belings Driving School</span>
-        <h2 class="section-title">Your Journey to Responsible, Confident Driving Starts Here</h2>
-        <p class="text-secondary lead">
-          {{ site_settings.about_story|truncatewords:45 }}
-        </p>
-        <p class="text-muted">
-          We pride ourselves on patient instruction, comprehensive mechanical basics, model town board drills, and rigorous road test preparation. Whether you are getting behind the wheel for the first time or upgrading your license class, our dedicated instructors guide you every step of the way.
-        </p>
-
-        <div class="row g-3 my-3">
-          <div class="col-sm-6">
-            <div class="d-flex align-items-center gap-2">
-              <i class="bi bi-patch-check-fill text-success fs-5"></i>
-              <span class="fw-semibold">Dual-Control Safety Fleet</span>
-            </div>
-          </div>
-          <div class="col-sm-6">
-            <div class="d-flex align-items-center gap-2">
-              <i class="bi bi-patch-check-fill text-success fs-5"></i>
-              <span class="fw-semibold">Model Town Board Mastery</span>
-            </div>
-          </div>
-          <div class="col-sm-6">
-            <div class="d-flex align-items-center gap-2">
-              <i class="bi bi-patch-check-fill text-success fs-5"></i>
-              <span class="fw-semibold">First Aid & Road Ethics</span>
-            </div>
-          </div>
-          <div class="col-sm-6">
-            <div class="d-flex align-items-center gap-2">
-              <i class="bi bi-patch-check-fill text-success fs-5"></i>
-              <span class="fw-semibold">Test Booking Assistance</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="d-flex gap-3 mt-4">
-          <a href="{% url 'website:about' %}" class="btn btn-brand-primary">
-            Read Full Story <i class="bi bi-arrow-right ms-1"></i>
-          </a>
-          <a href="{% url 'website:courses' %}" class="btn btn-outline-brand">
-            View License Classes
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- =========================================================================
-     4. COURSES OVERVIEW CARDS
-     ========================================================================= -->
-<section class="py-5" style="background-color: var(--body-bg);">
-  <div class="container py-lg-4">
-    <div class="section-header">
-      <span class="section-tag">Our Driving Programs</span>
-      <h2 class="section-title">NTSA Approved Driving Courses</h2>
-      <p class="section-desc">
-        Comprehensive theoretical knowledge and hands-on practical hours tailored to equip you with defensive driving instincts.
-      </p>
-    </div>
-
-    <div class="row g-4">
-      {% for course in featured_courses %}
-      <div class="col-md-6 col-lg-4">
-        <div class="course-card">
-          <div class="course-card-header">
-            <div class="course-icon-badge">
-              <i class="bi {{ course.icon_class|default:'bi-car-front' }}"></i>
-            </div>
-            <span class="course-category-badge">{{ course.category_display|default:course.get_license_category_display }}</span>
-          </div>
-          <div class="course-card-body">
-            <h4 class="font-heading mb-2" style="font-size: 1.25rem;">
-              <a href="{{ course.get_absolute_url }}">{{ course.name }}</a>
-            </h4>
-            <p class="text-muted small mb-3">
-              {{ course.short_description|truncatewords:20 }}
-            </p>
-
-            <div class="bg-light p-2 rounded small mb-3 d-flex justify-content-between text-secondary">
-              <span><i class="bi bi-clock me-1 text-primary"></i> {{ course.duration }}</span>
-              <span><i class="bi bi-speedometer2 me-1 text-primary"></i> {{ course.practical_hours }}h Practical</span>
-            </div>
-
-            <div class="d-flex align-items-baseline justify-content-between pt-2 border-top">
+            <div class="testimonial-author border-top pt-3">
+              <div class="testimonial-avatar d-flex align-items-center justify-content-center text-primary fw-bold overflow-hidden">
+                {% if testimonial.avatar %}
+                  <img src="{{ testimonial.avatar.url }}" alt="{{ testimonial.name }}" class="w-100 h-100 object-fit-cover rounded-circle">
+                {% else %}
+                  <i class="bi bi-person-fill fs-4"></i>
+                {% endif %}
+              </div>
               <div>
-                <span class="text-muted small d-block">Course Fee</span>
-                <span class="course-price-tag">KES {{ course.fee|intcomma }}</span>
+                <h6 class="mb-0 fw-bold">{{ testimonial.name }}</h6>
+                <span class="text-muted small">{{ testimonial.course_taken }}</span>
               </div>
-              <a href="{% url 'website:enroll' %}?course={{ course.slug }}" class="btn btn-brand-secondary btn-sm">
-                Enroll <i class="bi bi-chevron-right ms-1"></i>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if section_key == 'instructors' %}
+  <!-- =========================================================================
+       INSTRUCTORS PREVIEW
+       ========================================================================= -->
+  <section class="py-5 bg-white">
+    <div class="container py-lg-4">
+      <div class="section-header">
+        <span class="section-tag">Expert Trainers</span>
+        <h2 class="section-title">Meet Our Certified Instructors</h2>
+      </div>
+
+      <div class="row g-4">
+        {% for instructor in instructors %}
+        <div class="col-md-6 col-lg-3">
+          <div class="instructor-card">
+            <div class="instructor-image d-flex align-items-center justify-content-center text-secondary">
+              {% if instructor.photo %}
+                <img src="{{ instructor.photo.url }}" alt="{{ instructor.full_name }}" class="w-100 h-100 object-fit-cover">
+              {% else %}
+                <div class="text-center p-4">
+                  <i class="bi bi-person-badge display-3 text-primary mb-2"></i>
+                  <div class="fw-bold">{{ instructor.title }}</div>
+                </div>
+              {% endif %}
+            </div>
+            <div class="instructor-info">
+              <h5 class="font-heading mb-1">{{ instructor.full_name }}</h5>
+              <p class="text-primary small fw-semibold mb-2">{{ instructor.title }}</p>
+              <span class="badge bg-light text-dark border small mb-2">{{ instructor.license_categories }}</span>
+              <p class="text-muted small mb-0">{{ instructor.experience_years }}+ Years Experience</p>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if section_key == 'faqs' %}
+  <!-- =========================================================================
+       FAQS SECTION
+       ========================================================================= -->
+  <section class="py-5" style="background-color: var(--body-bg);">
+    <div class="container py-lg-4" style="max-width: 900px;">
+      <div class="section-header">
+        <span class="section-tag">Questions & Answers</span>
+        <h2 class="section-title">Frequently Asked Questions</h2>
+      </div>
+      <div class="accordion accordion-flush shadow-sm rounded-4 overflow-hidden bg-white border" id="homeFaqAccordion">
+        {% for faq in faqs %}
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="homeHeading{{ faq.id }}">
+            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} fw-bold text-primary py-3"
+                    type="button" data-bs-toggle="collapse" data-bs-target="#homeCollapse{{ faq.id }}">
+              <i class="bi bi-question-circle-fill text-warning me-2 fs-5"></i> {{ faq.question }}
+            </button>
+          </h2>
+          <div id="homeCollapse{{ faq.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#homeFaqAccordion">
+            <div class="accordion-body text-secondary">{{ faq.answer|linebreaksbr }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if section_key == 'cta' %}
+  <!-- =========================================================================
+       CALL-TO-ACTION BANNER
+       ========================================================================= -->
+  <section class="py-5" style="background-color: var(--body-bg);">
+    <div class="container">
+      <div class="cta-banner">
+        <div class="row align-items-center g-4">
+          <div class="col-lg-8">
+            {% if site_settings.cta_banner_tag %}
+            <span class="badge bg-dark text-warning px-3 py-1 mb-2 font-monospace">{{ site_settings.cta_banner_tag }}</span>
+            {% endif %}
+            {% if site_settings.cta_banner_title %}
+            <h2 class="display-6 fw-bold mb-2 text-dark font-heading">{{ site_settings.cta_banner_title }}</h2>
+            {% endif %}
+            {% if site_settings.cta_banner_subtitle %}
+            <p class="lead mb-0 text-dark opacity-90">{{ site_settings.cta_banner_subtitle }}</p>
+            {% endif %}
+          </div>
+          <div class="col-lg-4 text-lg-end">
+            <div class="d-flex flex-column flex-sm-row flex-lg-column gap-2 justify-content-end">
+              <a href="{% url 'website:enroll' %}" class="btn btn-dark btn-lg fw-bold px-4 py-3 shadow">
+                <i class="bi bi-pencil-square me-2"></i> {{ site_settings.cta_banner_btn_text|default:"Enroll Now" }}
               </a>
             </div>
           </div>
         </div>
       </div>
-      {% empty %}
-      <div class="col-12 text-center py-5">
-        <p class="text-muted">Courses are currently being updated in the administrative catalog.</p>
-      </div>
-      {% endfor %}
     </div>
+  </section>
+  {% endif %}
 
-    <div class="text-center mt-5">
-      <a href="{% url 'website:courses' %}" class="btn btn-brand-primary btn-lg px-4">
-        Browse All Courses & Categories <i class="bi bi-arrow-right ms-1"></i>
-      </a>
+  {% if section_key == 'contact' %}
+  <!-- =========================================================================
+       CONTACT & LOCATION SUMMARY SECTION
+       ========================================================================= -->
+  <section class="py-5 bg-white">
+    <div class="container py-lg-4">
+      <div class="section-header">
+        <span class="section-tag">Get In Touch</span>
+        <h2 class="section-title">Contact & Location</h2>
+      </div>
+      <div class="row g-4 justify-content-center">
+        {% if site_settings.phone %}
+        <div class="col-md-6 col-lg-3">
+          <div class="card border shadow-sm rounded-4 p-4 h-100 text-center">
+            <i class="bi bi-telephone-fill fs-2 text-primary mb-2"></i>
+            <h6 class="fw-bold">Call Us</h6>
+            <a href="tel:{{ site_settings.phone }}" class="text-dark fw-semibold">{{ site_settings.phone }}</a>
+          </div>
+        </div>
+        {% endif %}
+        {% if site_settings.email %}
+        <div class="col-md-6 col-lg-3">
+          <div class="card border shadow-sm rounded-4 p-4 h-100 text-center">
+            <i class="bi bi-envelope-fill fs-2 text-primary mb-2"></i>
+            <h6 class="fw-bold">Email Us</h6>
+            <a href="mailto:{{ site_settings.email }}" class="text-dark fw-semibold">{{ site_settings.email }}</a>
+          </div>
+        </div>
+        {% endif %}
+        {% if site_settings.address %}
+        <div class="col-md-6 col-lg-3">
+          <div class="card border shadow-sm rounded-4 p-4 h-100 text-center">
+            <i class="bi bi-geo-alt-fill fs-2 text-primary mb-2"></i>
+            <h6 class="fw-bold">Address</h6>
+            <span class="text-muted small">{{ site_settings.address }}</span>
+          </div>
+        </div>
+        {% endif %}
+        {% if site_settings.opening_hours %}
+        <div class="col-md-6 col-lg-3">
+          <div class="card border shadow-sm rounded-4 p-4 h-100 text-center">
+            <i class="bi bi-clock-history fs-2 text-primary mb-2"></i>
+            <h6 class="fw-bold">Opening Hours</h6>
+            <span class="text-muted small">{{ site_settings.opening_hours }}</span>
+          </div>
+        </div>
+        {% endif %}
+      </div>
     </div>
+  </section>
+  {% endif %}
+
+{% endfor %}
+
+<!-- Full-Screen Lightbox Overlay for Homepage Gallery -->
+<div id="belingsFullscreenLightbox" class="belings-lightbox-overlay" role="dialog" aria-modal="true" aria-label="Full-screen photo viewer">
+  <div class="belings-lightbox-topbar">
+    <div id="lightboxCounter" class="badge bg-dark border border-secondary px-3 py-2 font-monospace">1 / 1</div>
+    <button type="button" id="lightboxCloseBtn" class="btn btn-outline-light btn-sm rounded-pill px-3" aria-label="Close lightbox">
+      <i class="bi bi-x-lg me-1"></i>Close (Esc)
+    </button>
   </div>
-</section>
-
-<!-- =========================================================================
-     5. WHY CHOOSE US
-     ========================================================================= -->
-<section class="py-5 bg-white">
-  <div class="container py-lg-4">
-    <div class="section-header">
-      <span class="section-tag">Why Belings Driving School</span>
-      <h2 class="section-title">The Belings Advantage</h2>
-      <p class="section-desc">
-        We go beyond preparing you for a 15-minute test; we build confident, safety-conscious motorists equipped for Kenya's busy roadways.
-      </p>
-    </div>
-
-    <div class="row g-4">
-      <div class="col-md-6 col-lg-3">
-        <div class="feature-box">
-          <div class="feature-icon-wrapper">
-            <i class="bi bi-shield-lock-fill"></i>
-          </div>
-          <h4 class="font-heading fs-5 mb-2">100% NTSA Compliance</h4>
-          <p class="text-muted small mb-0">
-            Our curriculum and training materials are meticulously structured to comply with NTSA guidelines and driving test standards.
-          </p>
-        </div>
-      </div>
-
-      <div class="col-md-6 col-lg-3">
-        <div class="feature-box">
-          <div class="feature-icon-wrapper">
-            <i class="bi bi-people-fill"></i>
-          </div>
-          <h4 class="font-heading fs-5 mb-2">Certified Instructors</h4>
-          <p class="text-muted small mb-0">
-            Learn with patient, licensed professionals who understand nervous beginners and tailor their pacing to your learning speed.
-          </p>
-        </div>
-      </div>
-
-      <div class="col-md-6 col-lg-3">
-        <div class="feature-box">
-          <div class="feature-icon-wrapper">
-            <i class="bi bi-car-front-fill"></i>
-          </div>
-          <h4 class="font-heading fs-5 mb-2">Dual-Pedal Vehicles</h4>
-          <p class="text-muted small mb-0">
-            Practice in top-condition, dual-control manual and automatic cars that guarantee maximum safety during practical road drills.
-          </p>
-        </div>
-      </div>
-
-      <div class="col-md-6 col-lg-3">
-        <div class="feature-box">
-          <div class="feature-icon-wrapper">
-            <i class="bi bi-calendar2-week-fill"></i>
-          </div>
-          <h4 class="font-heading fs-5 mb-2">Flexible Timetables</h4>
-          <p class="text-muted small mb-0">
-            Balancing work or school? We offer early morning, midday, evening, and Saturday intensive batches tailored to your calendar.
-          </p>
-        </div>
-      </div>
-    </div>
+  <div class="belings-lightbox-stage" id="lightboxTouchStage">
+    <button type="button" id="lightboxPrevBtn" class="belings-lightbox-nav belings-lightbox-prev" aria-label="Previous image">
+      <i class="bi bi-chevron-left"></i>
+    </button>
+    <img id="lightboxMainImage" src="" alt="Gallery full view">
+    <button type="button" id="lightboxNextBtn" class="belings-lightbox-nav belings-lightbox-next" aria-label="Next image">
+      <i class="bi bi-chevron-right"></i>
+    </button>
   </div>
-</section>
-
-<!-- =========================================================================
-     6. TESTIMONIALS SECTION
-     ========================================================================= -->
-<section class="py-5" style="background-color: var(--body-bg);">
-  <div class="container py-lg-4">
-    <div class="section-header">
-      <span class="section-tag">Student Reviews</span>
-      <h2 class="section-title">What Our Graduates Say</h2>
-      <p class="section-desc">
-        Thousands of successful drivers passed their NTSA test on their first attempt with Belings Driving School.
-      </p>
-    </div>
-
-    <div class="row g-4">
-      {% for testimonial in testimonials %}
-      <div class="col-md-6 col-lg-4">
-        <div class="testimonial-card">
-          <div>
-            <div class="testimonial-stars">
-              {% for i in "12345"|make_list %}
-                <i class="bi bi-star-fill"></i>
-              {% endfor %}
-            </div>
-            <p class="testimonial-quote">
-              "{{ testimonial.quote }}"
-            </p>
-          </div>
-          <div class="testimonial-author border-top pt-3">
-            <div class="testimonial-avatar d-flex align-items-center justify-content-center text-primary fw-bold">
-              <i class="bi bi-person-fill fs-4"></i>
-            </div>
-            <div>
-              <h6 class="mb-0 fw-bold">{{ testimonial.name }}</h6>
-              <span class="text-muted small">{{ testimonial.course_taken }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      {% empty %}
-      <div class="col-md-4">
-        <div class="testimonial-card">
-          <div>
-            <div class="testimonial-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
-            <p class="testimonial-quote">
-              "I was terrified of highway driving and roundabouts. Belings instructors were remarkably patient and taught me defensive skills that gave me confidence. Passed my test first attempt!"
-            </p>
-          </div>
-          <div class="testimonial-author border-top pt-3">
-            <div class="testimonial-avatar d-flex align-items-center justify-content-center text-primary"><i class="bi bi-person-fill fs-4"></i></div>
-            <div>
-              <h6 class="mb-0 fw-bold">Mercy Wanjiku</h6>
-              <span class="text-muted small">Category B Graduate</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="testimonial-card">
-          <div>
-            <div class="testimonial-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
-            <p class="testimonial-quote">
-              "Best driving school in Nairobi! The model town board classes were crystal clear, and the vehicle maintenance lectures were an unexpected bonus."
-            </p>
-          </div>
-          <div class="testimonial-author border-top pt-3">
-            <div class="testimonial-avatar d-flex align-items-center justify-content-center text-primary"><i class="bi bi-person-fill fs-4"></i></div>
-            <div>
-              <h6 class="mb-0 fw-bold">Brian Ochieng</h6>
-              <span class="text-muted small">Category C Commercial</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="testimonial-card">
-          <div>
-            <div class="testimonial-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
-            <p class="testimonial-quote">
-              "Flexible installment payment plan allowed me to finish my course without financial stress. The staff helped me with all TIMS / NTSA test booking."
-            </p>
-          </div>
-          <div class="testimonial-author border-top pt-3">
-            <div class="testimonial-avatar d-flex align-items-center justify-content-center text-primary"><i class="bi bi-person-fill fs-4"></i></div>
-            <div>
-              <h6 class="mb-0 fw-bold">Kevin Mutua</h6>
-              <span class="text-muted small">Category A Motorcycle</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
+  <div class="belings-lightbox-footer">
+    <h5 id="lightboxTitle" class="fw-bold mb-1 text-white"></h5>
+    <p id="lightboxCaption" class="small text-light opacity-75 mb-0"></p>
   </div>
-</section>
+</div>
 
-<!-- =========================================================================
-     7. INSTRUCTORS PREVIEW
-     ========================================================================= -->
-<section class="py-5 bg-white">
-  <div class="container py-lg-4">
-    <div class="section-header">
-      <span class="section-tag">Expert Trainers</span>
-      <h2 class="section-title">Meet Our Certified Instructors</h2>
-      <p class="section-desc">
-        Licensed by the NTSA with over a decade of dedicated professional driving instruction.
-      </p>
-    </div>
+{% endif %}
+{% endblock %}
 
-    <div class="row g-4">
-      {% for instructor in instructors %}
-      <div class="col-md-6 col-lg-3">
-        <div class="instructor-card">
-          <div class="instructor-image d-flex align-items-center justify-content-center text-secondary">
-            {% if instructor.photo %}
-              <img src="{{ instructor.photo.url }}" alt="{{ instructor.full_name }}" class="w-100 h-100 object-fit-cover">
-            {% else %}
-              <div class="text-center p-4">
-                <i class="bi bi-person-badge display-3 text-primary mb-2"></i>
-                <div class="fw-bold">{{ instructor.title }}</div>
-              </div>
-            {% endif %}
-          </div>
-          <div class="instructor-info">
-            <h5 class="font-heading mb-1">{{ instructor.full_name }}</h5>
-            <p class="text-primary small fw-semibold mb-2">{{ instructor.title }}</p>
-            <span class="badge bg-light text-dark border small mb-2">{{ instructor.license_categories }}</span>
-            <p class="text-muted small mb-0">{{ instructor.experience_years }}+ Years Experience</p>
-          </div>
-        </div>
-      </div>
-      {% empty %}
-      <div class="col-md-6 col-lg-3">
-        <div class="instructor-card">
-          <div class="instructor-image d-flex align-items-center justify-content-center text-secondary">
-            <div class="text-center p-4">
-              <i class="bi bi-person-badge display-3 text-primary mb-2"></i>
-              <div class="fw-bold">Senior Instructor</div>
-            </div>
-          </div>
-          <div class="instructor-info">
-            <h5 class="font-heading mb-1">Samuel Mwangi</h5>
-            <p class="text-primary small fw-semibold mb-2">Chief Driving Instructor</p>
-            <span class="badge bg-light text-dark border small mb-2">Category A, B & C</span>
-            <p class="text-muted small mb-0">12+ Years Experience</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3">
-        <div class="instructor-card">
-          <div class="instructor-image d-flex align-items-center justify-content-center text-secondary">
-            <div class="text-center p-4">
-              <i class="bi bi-person-badge display-3 text-primary mb-2"></i>
-              <div class="fw-bold">Lead Specialist</div>
-            </div>
-          </div>
-          <div class="instructor-info">
-            <h5 class="font-heading mb-1">Grace Akinyi</h5>
-            <p class="text-primary small fw-semibold mb-2">Defensive Driving Specialist</p>
-            <span class="badge bg-light text-dark border small mb-2">Category B (Auto & Manual)</span>
-            <p class="text-muted small mb-0">8+ Years Experience</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3">
-        <div class="instructor-card">
-          <div class="instructor-image d-flex align-items-center justify-content-center text-secondary">
-            <div class="text-center p-4">
-              <i class="bi bi-person-badge display-3 text-primary mb-2"></i>
-              <div class="fw-bold">Commercial Trainer</div>
-            </div>
-          </div>
-          <div class="instructor-info">
-            <h5 class="font-heading mb-1">David Kiprono</h5>
-            <p class="text-primary small fw-semibold mb-2">Heavy Commercial & PSV Lead</p>
-            <span class="badge bg-light text-dark border small mb-2">Category C & D</span>
-            <p class="text-muted small mb-0">15+ Years Experience</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3">
-        <div class="instructor-card">
-          <div class="instructor-image d-flex align-items-center justify-content-center text-secondary">
-            <div class="text-center p-4">
-              <i class="bi bi-person-badge display-3 text-primary mb-2"></i>
-              <div class="fw-bold">Motorcycle Trainer</div>
-            </div>
-          </div>
-          <div class="instructor-info">
-            <h5 class="font-heading mb-1">Patrick Mutiso</h5>
-            <p class="text-primary small fw-semibold mb-2">Category A Riding Specialist</p>
-            <span class="badge bg-light text-dark border small mb-2">Category A1, A2 & A3</span>
-            <p class="text-muted small mb-0">9+ Years Experience</p>
-          </div>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
+{% block extra_js %}
+<script>
+  // Homepage gallery category tabs filter
+  document.querySelectorAll('.home-gallery-tab').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.home-gallery-tab').forEach(b => {
+        b.classList.remove('btn-brand-primary', 'active');
+        b.classList.add('btn-outline-secondary', 'bg-white');
+      });
+      this.classList.remove('btn-outline-secondary', 'bg-white');
+      this.classList.add('btn-brand-primary', 'active');
 
-    <div class="text-center mt-4">
-      <a href="{% url 'website:instructors' %}" class="btn btn-outline-brand">
-        View All Instructors & Credentials <i class="bi bi-arrow-right ms-1"></i>
-      </a>
-    </div>
-  </div>
-</section>
+      const cat = this.getAttribute('data-category');
+      document.querySelectorAll('.home-gallery-item').forEach(item => {
+        if (cat === 'all' || item.getAttribute('data-category') === cat) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+  });
 
-<!-- =========================================================================
-     8. CALL-TO-ACTION BANNER
-     ========================================================================= -->
-<section class="py-5" style="background-color: var(--body-bg);">
-  <div class="container">
-    <div class="cta-banner">
-      <div class="row align-items-center g-4">
-        <div class="col-lg-8">
-          <span class="badge bg-dark text-warning px-3 py-1 mb-2 font-monospace">LIMITED SLOTS AVAILABLE</span>
-          <h2 class="display-6 fw-bold mb-2 text-dark font-heading">
-            Ready to Get Behind the Wheel?
-          </h2>
-          <p class="lead mb-0 text-dark opacity-90">
-            Join thousands of successful drivers. Register today and enjoy affordable rates, installment options, and comprehensive NTSA test support.
-          </p>
-        </div>
-        <div class="col-lg-4 text-lg-end">
-          <div class="d-flex flex-column flex-sm-row flex-lg-column gap-2 justify-content-end">
-            <a href="{% url 'website:enroll' %}" class="btn btn-dark btn-lg fw-bold px-4 py-3 shadow">
-              <i class="bi bi-pencil-square me-2"></i> Start Online Enrollment
-            </a>
-            <a href="https://wa.me/{{ site_settings.whatsapp_number|default:'254700123456' }}?text=Hello%20Belings%20Driving%20School,%20I%20have%20questions%20about%20fees."
-               class="btn btn-success btn-lg fw-bold px-4 py-3" target="_blank" rel="noopener">
-              <i class="bi bi-whatsapp me-2"></i> Instant WhatsApp Inquiry
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+  // Full-screen Lightbox with Keyboard Arrows, Next/Prev, Touch Swipe & Counter
+  (function() {
+    var overlay = document.getElementById('belingsFullscreenLightbox');
+    if (!overlay) return;
+    var mainImg = document.getElementById('lightboxMainImage');
+    var titleEl = document.getElementById('lightboxTitle');
+    var captionEl = document.getElementById('lightboxCaption');
+    var counterEl = document.getElementById('lightboxCounter');
+    var prevBtn = document.getElementById('lightboxPrevBtn');
+    var nextBtn = document.getElementById('lightboxNextBtn');
+    var closeBtn = document.getElementById('lightboxCloseBtn');
+    var stage = document.getElementById('lightboxTouchStage');
+    var triggers = Array.from(document.querySelectorAll('.js-lightbox-trigger'));
+    var currentIndex = 0;
 
+    function showAt(idx) {
+      if (!triggers.length) return;
+      currentIndex = (idx + triggers.length) % triggers.length;
+      var el = triggers[currentIndex];
+      mainImg.src = el.getAttribute('data-large-url') || '';
+      mainImg.alt = el.getAttribute('data-title') || 'Gallery Photo';
+      titleEl.textContent = el.getAttribute('data-title') || '';
+      captionEl.textContent = el.getAttribute('data-caption') || '';
+      counterEl.textContent = (currentIndex + 1) + ' / ' + triggers.length;
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    triggers.forEach(function(el, i) {
+      el.addEventListener('click', function() { showAt(i); });
+    });
+    if (prevBtn) prevBtn.addEventListener('click', function(e) { e.stopPropagation(); showAt(currentIndex - 1); });
+    if (nextBtn) nextBtn.addEventListener('click', function(e) { e.stopPropagation(); showAt(currentIndex + 1); });
+    if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay || e.target === stage) closeLightbox();
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (!overlay.classList.contains('active')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') showAt(currentIndex - 1);
+      if (e.key === 'ArrowRight') showAt(currentIndex + 1);
+    });
+
+    var touchStartX = 0;
+    overlay.addEventListener('touchstart', function(e) {
+      if (e.changedTouches && e.changedTouches.length) touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    overlay.addEventListener('touchend', function(e) {
+      if (!e.changedTouches || !e.changedTouches.length) return;
+      var dx = e.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(dx) > 45) {
+        if (dx < 0) showAt(currentIndex + 1);
+        else showAt(currentIndex - 1);
+      }
+    }, { passive: true });
+  })();
+</script>
 {% endblock %}

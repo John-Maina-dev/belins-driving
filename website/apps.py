@@ -5,3 +5,6 @@ class WebsiteConfig(AppConfig):
     name = 'website'
     verbose_name = 'Public Website & Content'
 
+    def ready(self):
+        from .signals import register_cleanup_signals
+        register_cleanup_signals()

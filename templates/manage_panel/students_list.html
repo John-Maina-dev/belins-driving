@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Students Directory - Site Management{% endblock %}
+{% block page_title %}Students Directory{% endblock %}
+{% block page_subtitle %}Search students, view profile &amp; fee balances, or enroll a student in a course{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm border-0">
+  <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <form method="get" class="d-flex gap-2" style="min-width: 300px;">
+      <input type="text" name="q" value="{{ search_query }}" class="form-control form-control-sm" placeholder="Search name, ID, email, or phone...">
+      <button type="submit" class="btn btn-sm btn-outline-primary">Search</button>
+      {% if search_query %}
+      <a href="{% url 'manage:students_list' %}" class="btn btn-sm btn-outline-secondary">Reset</a>
+      {% endif %}
+    </form>
+    <div class="d-flex gap-2">
+      <a href="{% url 'manage:enrollments_list' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-list-check me-1"></i>Approval Queue
+      </a>
+      <a href="{% url 'manage:enrollment_create' %}" class="btn btn-sm btn-primary fw-bold">
+        <i class="bi bi-plus-lg me-1"></i>Enroll a Student
+      </a>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    {% if students %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Student Name</th>
+            <th>ID &amp; Age</th>
+            <th>Contact</th>
+            <th>Course &amp; Branch</th>
+            <th>Net Fee / Balance</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for st in students %}
+          <tr>
+            <td>
+              <a href="{% url 'manage:student_detail' st.pk %}" class="fw-bold text-decoration-none text-primary">{{ st.full_name }}</a>
+            </td>
+            <td>
+              <div class="font-monospace small">{{ st.id_number }}</div>
+              <div class="small text-muted">{{ st.date_of_birth|date:"Y-m-d" }} ({{ st.age }} yrs)</div>
+            </td>
+            <td>
+              <div class="small">{{ st.email }}</div>
+              <div class="small text-muted">{{ st.phone }}</div>
+            </td>
+            <td>
+              <div class="fw-semibold">{{ st.course.name }}</div>
+              <div class="small text-muted">{% if st.branch %}{{ st.branch.name }}{% else %}{{ st.preferred_branch }}{% endif %}</div>
+            </td>
+            <td>
+              <div class="small fw-semibold">Net: KES {{ st.effective_fee|intcomma }}</div>
+              <div class="small {% if st.balance_due > 0 %}text-danger{% else %}text-success{% endif %}">
+                Bal: KES {{ st.balance_due|intcomma }}
+              </div>
+            </td>
+            <td>
+              {% if st.status in 'approved APPROVED enrolled' %}
+                <span class="badge bg-success">Approved</span>
+              {% elif st.status in 'rejected REJECTED' %}
+                <span class="badge bg-danger">Rejected</span>
+              {% else %}
+                <span class="badge bg-warning text-dark">Pending</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <div class="d-flex justify-content-end gap-1">
+                <a href="{% url 'manage:student_detail' st.pk %}" class="btn btn-sm btn-outline-primary">
+                  <i class="bi bi-person-lines-fill me-1"></i>Profile
+                </a>
+                <a href="{% url 'manage:enrollment_create' %}?student_id={{ st.pk }}" class="btn btn-sm btn-primary">
+                  <i class="bi bi-mortarboard me-1"></i>Enroll in Course
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="p-5 text-center text-muted">
+      <p class="mb-2">No student records match your search.</p>
+      <a href="{% url 'manage:enrollment_create' %}" class="btn btn-sm btn-primary">Enroll New Student</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+

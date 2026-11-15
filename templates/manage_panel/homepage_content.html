@@ -35,6 +35,42 @@
             {% endif %}
           </div>
 
+          <div class="p-3 bg-light rounded-3 border mb-3">
+            <h6 class="fw-bold small text-uppercase text-muted mb-2">Hero Overlay & Homepage Gallery Settings</h6>
+            <div class="row g-3 align-items-center">
+              <div class="col-sm-6">
+                <div class="form-check">
+                  {{ form.hero_overlay_enabled }}
+                  <label class="form-check-label fw-semibold">Enable Hero Overlay (Default OFF)</label>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="form-check">
+                  {{ form.hero_text_panel_enabled }}
+                  <label class="form-check-label fw-semibold">Enable Hero Text Backdrop Panel</label>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label small fw-semibold">Hero Overlay Color</label>
+                {{ form.hero_overlay_color }}
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label small fw-semibold">Hero Overlay Opacity (0 - 70%)</label>
+                {{ form.hero_overlay_opacity }}
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label small fw-semibold">Homepage Featured Gallery Count</label>
+                {{ form.home_gallery_count }}
+              </div>
+              <div class="col-sm-6">
+                <div class="form-check pt-3">
+                  {{ form.home_gallery_show_tabs }}
+                  <label class="form-check-label fw-semibold">Show Gallery Category Filter Tabs on Home</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- About Preview Section -->
           <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2 mb-3 mt-4">Homepage "About Us" Preview Section</h6>
           <div class="row g-3 mb-3">
@@ -92,6 +128,43 @@
             <div class="col-sm-3 col-6">
               <label class="form-label fw-semibold">Years Exp.</label>
               {{ form.stat_experience_years }}
+            </div>
+          </div>
+
+          <!-- Homepage Gallery Settings & Layout Size -->
+          <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2 mb-3 mt-4">Homepage Photo Gallery &amp; Card Layout Settings</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Gallery Section Heading</label>
+              {{ form.home_gallery_title }}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Gallery Section Subtitle</label>
+              {{ form.home_gallery_subtitle }}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Gallery Card Layout Size</label>
+              {{ form.gallery_layout_size }}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Images Shown on Home Page (Count)</label>
+              {{ form.home_gallery_count }}
+            </div>
+            <div class="col-sm-6">
+              <div class="form-check">
+                {{ form.home_gallery_featured_first }}
+                <label class="form-check-label fw-semibold" for="{{ form.home_gallery_featured_first.id_for_label }}">
+                  Show Featured Photos First (uncheck for Latest N)
+                </label>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-check">
+                {{ form.home_gallery_show_tabs }}
+                <label class="form-check-label fw-semibold" for="{{ form.home_gallery_show_tabs.id_for_label }}">
+                  Show Category Filter Tabs on Home Page
+                </label>
+              </div>
             </div>
           </div>
 

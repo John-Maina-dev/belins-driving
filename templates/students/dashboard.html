@@ -1,0 +1,288 @@
+{% extends "base_public.html" %}
+{% load humanize %}
+
+{% block title %}Student Dashboard - {{ site_settings.school_name|default:"Belings Driving School" }}{% endblock %}
+
+{% block content %}
+<div class="py-4" style="background-color: var(--body-bg); min-height: 80vh;">
+  <div class="container py-3">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <div>
+        <h2 class="font-heading fw-bold mb-1">Student Dashboard</h2>
+        <p class="text-muted small mb-0">Welcome, {{ request.user.get_full_name|default:request.user.username }}</p>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge {% if is_approved %}bg-success{% elif is_pending %}bg-warning text-dark{% else %}bg-secondary{% endif %} px-3 py-2 fs-6">
+          <i class="bi {% if is_approved %}bi-check-circle{% elif is_pending %}bi-hourglass-split{% else %}bi-info-circle{% endif %} me-1"></i>
+          {% if is_approved %}Account & Enrollment Active{% elif is_pending %}Awaiting School Approval{% else %}Enrolled{% endif %}
+        </span>
+      </div>
+    </div>
+
+    {% if is_pending or not is_approved %}
+      <!-- Pending Approval Warning Banner -->
+      <div class="card border-0 shadow-sm rounded-4 mb-4" style="border-left: 6px solid var(--brand-secondary) !important;">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-start gap-3">
+            <div class="p-3 bg-warning bg-opacity-25 rounded-circle text-warning flex-shrink-0">
+              <i class="bi bi-clock-history fs-3 text-dark"></i>
+            </div>
+            <div>
+              <h4 class="fw-bold text-dark mb-1">Awaiting Approval</h4>
+              <p class="text-secondary mb-2">
+                Your driving school enrollment application has been submitted and is currently pending review and verification by the school administration.
+              </p>
+              <div class="small text-muted">
+                <strong>Notice:</strong> Practical lesson booking, online fee payments, and training syllabus access will be enabled once your application is formally approved by the Super Administrator.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="row g-4">
+      <!-- Left Column: Program, Progress & Bookings -->
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+          <h5 class="fw-bold font-heading mb-3"><i class="bi bi-mortarboard me-2 text-primary"></i>Enrolled Program & Package Progress</h5>
+          {% if enrollment %}
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <span class="text-muted small d-block">Course</span>
+                <span class="fw-bold fs-5 text-dark">{{ enrollment.course.name }}</span>
+              </div>
+              <div class="col-sm-6">
+                <span class="text-muted small d-block">License Category</span>
+                <span class="badge bg-light text-dark border">{{ enrollment.course.get_license_category_display }}</span>
+              </div>
+              <div class="col-sm-6">
+                <span class="text-muted small d-block">Training Branch</span>
+                <span class="fw-semibold text-secondary">
+                  {% if enrollment.branch %}{{ enrollment.branch.name }}{% else %}{{ enrollment.preferred_branch }}{% endif %}
+                </span>
+              </div>
+              <div class="col-sm-6">
+                <span class="text-muted small d-block">Course Tuition</span>
+                <span class="fw-bold text-primary">KES {{ enrollment.course.fee|intcomma }}</span>
+              </div>
+            </div>
+
+            <div class="p-3 bg-light rounded-3 border">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="d-flex justify-content-between small fw-bold mb-1">
+                    <span>Verified Practical Hours</span>
+                    <span class="text-primary">{{ enrollment.verified_practical_hours|floatformat:0 }} / {{ enrollment.course.practical_hours }} hrs</span>
+                  </div>
+                  <div class="small text-muted">
+                    Remaining: <strong>{{ enrollment.remaining_practical_hours|floatformat:0 }} hrs</strong>
+                    (Reserved: {{ enrollment.reserved_practical_hours|floatformat:0 }} hrs)
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="d-flex justify-content-between small fw-bold mb-1">
+                    <span>Verified Theory Hours</span>
+                    <span class="text-primary">{{ enrollment.verified_theory_hours|floatformat:0 }} / {{ enrollment.course.theory_hours }} hrs</span>
+                  </div>
+                  <div class="small text-muted">
+                    Remaining: <strong>{{ enrollment.remaining_theory_hours|floatformat:0 }} hrs</strong>
+                    (Reserved: {{ enrollment.reserved_theory_hours|floatformat:0 }} hrs)
+                  </div>
+                </div>
+              </div>
+              <div class="small text-muted mt-2 pt-2 border-top">
+                <i class="bi bi-info-circle me-1"></i> Only lessons marked <strong>Verified</strong> by administration count as officially completed package hours.
+              </div>
+            </div>
+          {% else %}
+            <p class="text-muted mb-3">You have not submitted an enrollment application yet.</p>
+            <a href="{% url 'website:enroll' %}" class="btn btn-brand-primary">Enroll in a Course</a>
+          {% endif %}
+        </div>
+
+        <!-- Student Quick Actions -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+          <h5 class="fw-bold font-heading mb-3"><i class="bi bi-grid me-2 text-primary"></i>Student Services</h5>
+          <div class="row g-3">
+            <div class="col-sm-4">
+              <div class="p-3 border rounded-3 text-center {% if not is_approved %}opacity-50{% endif %}">
+                <i class="bi bi-calendar-check fs-2 text-primary d-block mb-2"></i>
+                <h6 class="fw-bold mb-1">Book Lessons</h6>
+                <p class="small text-muted mb-2">Reserve instructor hours</p>
+                {% if is_approved %}
+                  <a href="{% url 'students:book_lesson' %}" class="btn btn-sm btn-primary fw-bold">Book Lesson</a>
+                {% else %}
+                  <button class="btn btn-sm btn-secondary" disabled title="Locked until approved">Locked</button>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-sm-4">
+              <div class="p-3 border rounded-3 text-center {% if not is_approved %}opacity-50{% endif %}">
+                <i class="bi bi-credit-card-2-front fs-2 text-success d-block mb-2"></i>
+                <h6 class="fw-bold mb-1">Fee Payments</h6>
+                <p class="small text-muted mb-2">Pay via M-Pesa / Card</p>
+                {% if is_approved %}
+                  <a href="{% url 'students:payment' %}" class="btn btn-sm btn-outline-success">Make Payment</a>
+                {% else %}
+                  <button class="btn btn-sm btn-secondary" disabled title="Locked until approved">Locked</button>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-sm-4">
+              <div class="p-3 border rounded-3 text-center {% if not is_approved %}opacity-50{% endif %}">
+                <i class="bi bi-book fs-2 text-info d-block mb-2"></i>
+                <h6 class="fw-bold mb-1">Course Material</h6>
+                <p class="small text-muted mb-2">Road curriculum</p>
+                {% if is_approved %}
+                  <a href="{% url 'students:course_content' %}" class="btn btn-sm btn-outline-info">Access Syllabus</a>
+                {% else %}
+                  <button class="btn btn-sm btn-secondary" disabled title="Locked until approved">Locked</button>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Bookings -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold font-heading mb-0"><i class="bi bi-calendar-event me-2 text-primary"></i>Upcoming Scheduled Lessons</h5>
+            {% if is_approved %}
+            <a href="{% url 'students:book_lesson' %}" class="btn btn-sm btn-brand-secondary">
+              <i class="bi bi-plus-circle me-1"></i> Book New Lesson
+            </a>
+            {% endif %}
+          </div>
+          {% if upcoming_bookings %}
+          <div class="table-responsive">
+            <table class="table align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Date & Time</th>
+                  <th>Type</th>
+                  <th>Branch</th>
+                  <th>Instructor & Vehicle</th>
+                  <th>Status</th>
+                  <th class="text-end">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for b in upcoming_bookings %}
+                <tr>
+                  <td>
+                    <div class="fw-bold">{{ b.date }}</div>
+                    <small class="text-muted">{{ b.start_time|time:"H:i" }} - {{ b.end_time|time:"H:i" }}</small>
+                  </td>
+                  <td><span class="badge bg-light text-dark border">{{ b.get_lesson_type_display }}</span></td>
+                  <td>{{ b.branch.name }}</td>
+                  <td>
+                    <div>{{ b.instructor.full_name|default:"Auto-Assigned" }}</div>
+                    {% if b.vehicle %}<small class="text-muted">{{ b.vehicle.plate_number }}</small>{% endif %}
+                  </td>
+                  <td><span class="badge bg-primary">Scheduled</span></td>
+                  <td class="text-end">
+                    <form method="post" action="{% url 'students:cancel_lesson' b.pk %}" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-muted small mb-0">You have no upcoming scheduled lessons.</p>
+          {% endif %}
+        </div>
+
+        <!-- Past & Completed Lessons History -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+          <h5 class="fw-bold font-heading mb-3"><i class="bi bi-clock-history me-2 text-primary"></i>Lesson History & Verification Status</h5>
+          {% if past_bookings %}
+          <div class="table-responsive">
+            <table class="table align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Date & Time</th>
+                  <th>Type</th>
+                  <th>Instructor</th>
+                  <th>Verification Status</th>
+                  <th>Feedback / Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for b in past_bookings %}
+                <tr>
+                  <td>
+                    <div class="fw-bold">{{ b.date }}</div>
+                    <small class="text-muted">{{ b.start_time|time:"H:i" }} - {{ b.end_time|time:"H:i" }}</small>
+                  </td>
+                  <td>{{ b.get_lesson_type_display }}</td>
+                  <td>{{ b.instructor.full_name|default:"-" }}</td>
+                  <td>
+                    {% if b.status == 'VERIFIED' %}
+                      <span class="badge bg-success"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>
+                    {% elif b.status == 'COMPLETED' %}
+                      <span class="badge bg-warning text-dark">Awaiting Admin Verification</span>
+                    {% elif b.status == 'REJECTED' %}
+                      <span class="badge bg-danger">Disputed / Rejected</span>
+                    {% elif b.status == 'CANCELLED' %}
+                      <span class="badge bg-secondary">Cancelled</span>
+                    {% elif b.status == 'NO_SHOW' %}
+                      <span class="badge bg-dark">No-Show</span>
+                    {% else %}
+                      <span class="badge bg-info text-dark">{{ b.get_status_display }}</span>
+                    {% endif %}
+                  </td>
+                  <td class="small text-muted">
+                    {% if b.rejection_reason %}
+                      <div class="text-danger"><strong>Declined:</strong> {{ b.rejection_reason }}</div>
+                    {% endif %}
+                    {{ b.instructor_notes|default:"-" }}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-muted small mb-0">No past lessons recorded yet.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Right Column: Profile -->
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+          <h5 class="fw-bold font-heading mb-3"><i class="bi bi-person-badge me-2 text-primary"></i>Profile Details</h5>
+          <div class="mb-2">
+            <span class="text-muted small d-block">Full Name</span>
+            <span class="fw-semibold">{{ request.user.get_full_name|default:request.user.username }}</span>
+          </div>
+          <div class="mb-2">
+            <span class="text-muted small d-block">Email</span>
+            <span class="fw-semibold">{{ request.user.email }}</span>
+          </div>
+          {% if enrollment and enrollment.date_of_birth %}
+          <div class="mb-2">
+            <span class="text-muted small d-block">Date of Birth</span>
+            <span class="fw-semibold">{{ enrollment.date_of_birth }}</span>
+          </div>
+          {% endif %}
+          <div class="mb-2">
+            <span class="text-muted small d-block">Account Status</span>
+            <span class="badge {% if request.user.profile.approval_status == 'APPROVED' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+              {{ request.user.profile.get_approval_status_display }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

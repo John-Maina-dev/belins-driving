@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Site Management{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="content-card" style="max-width: 860px;">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|striptags }}</div>{% endif %}
+    <div class="row g-3">
+      {% if map_only %}
+      <div class="col-12">
+        <div class="alert alert-info mb-0 small">
+          You can edit the <strong>map</strong> of <strong>{{ branch.name }}</strong>
+          {% if branch.address %}({{ branch.address }}){% endif %}.
+          Other branch details are managed by the Super Admin.
+        </div>
+      </div>
+      {% else %}
+      <div class="col-md-8">
+        <label class="form-label fw-semibold">Branch Name <span class="text-danger">*</span></label>
+        {{ form.name }}
+        {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors|striptags }}</div>{% endif %}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Branch Code <span class="text-danger">*</span></label>
+        {{ form.code }}
+        {% if form.code.errors %}<div class="text-danger small">{{ form.code.errors|striptags }}</div>{% endif %}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">Town / City</label>
+        {{ form.town }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">Street Address</label>
+        {{ form.address }}
+        <div class="form-text">Also used to build the map when no embed link or coordinates are set.</div>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">Phone</label>
+        {{ form.phone }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">Email</label>
+        {{ form.email }}
+        {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors|striptags }}</div>{% endif %}
+      </div>
+      <div class="col-md-8">
+        <label class="form-label fw-semibold">Opening Hours</label>
+        {{ form.opening_hours }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Display Order</label>
+        {{ form.order }}
+      </div>
+      {% endif %}
+
+      <div class="col-12">
+        <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2 mb-0 mt-2">Google Map</h6>
+      </div>
+
+      {% if branch and branch.map_is_unverified_default %}
+      <div class="col-12">
+        <div class="alert alert-warning mb-0 small">
+          <strong>UNVERIFIED default map.</strong> This pin (Ouru Power, Kisii) is a search-based guess.
+          Check that it points to the right building, then paste the exact embed from Google Maps below.
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="col-12">
+        <label class="form-label fw-semibold" for="{{ form.map_embed_url.id_for_label }}">Map embed link</label>
+        {{ form.map_embed_url }}
+        <div class="form-text">Google Maps &gt; Share &gt; Embed a map &gt; copy the link. You can paste the plain link or the whole iframe code &mdash; only the Google Maps address (<code>https://www.google.com/maps...</code>) is kept.</div>
+        {% if form.map_embed_url.errors %}<div class="text-danger small mt-1">{{ form.map_embed_url.errors|striptags }}</div>{% endif %}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold" for="{{ form.latitude.id_for_label }}">Latitude (optional)</label>
+        {{ form.latitude }}
+        {% if form.latitude.errors %}<div class="text-danger small">{{ form.latitude.errors|striptags }}</div>{% endif %}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold" for="{{ form.longitude.id_for_label }}">Longitude (optional)</label>
+        {{ form.longitude }}
+        {% if form.longitude.errors %}<div class="text-danger small">{{ form.longitude.errors|striptags }}</div>{% endif %}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold" for="{{ form.map_zoom.id_for_label }}">Zoom (1&ndash;21)</label>
+        {{ form.map_zoom }}
+        {% if form.map_zoom.errors %}<div class="text-danger small">{{ form.map_zoom.errors|striptags }}</div>{% endif %}
+      </div>
+      <div class="col-12">
+        <div class="form-text mt-0">Priority: embed link, then latitude/longitude, then the street address. If none is available the public map section is hidden.</div>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label fw-semibold">Live preview</label>
+        <div id="mapPreviewBox"
+             data-url="{% url 'manage:branch_map_preview' %}"
+             data-address="{{ branch.address|default:'' }}"
+             data-town="{{ branch.town|default:'' }}">
+          <div id="mapPreviewError" class="alert alert-danger small py-2 d-none"></div>
+          <div id="mapPreviewEmpty" class="border rounded-3 bg-light text-muted small p-4 text-center d-none">
+            No map data yet &mdash; the map will not be shown on the public site.
+          </div>
+          <iframe id="mapPreviewFrame" title="Map preview" class="w-100 border rounded-3 d-none"
+                  style="height: 320px; border: 0;" loading="lazy"
+                  referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+      </div>
+
+      {% if not map_only %}
+      <div class="col-12">
+        <label class="form-label fw-semibold">Branch Photo (Optional)</label>
+        {% if branch and branch.image %}
+        <div class="mb-2">
+          <img src="{{ branch.image.url }}" alt="{{ branch.name }}" style="height: 90px; width: 140px; object-fit: cover; border-radius: 6px; border: 1px solid #dee2e6;">
+        </div>
+        {% endif %}
+        {{ form.image }}
+      </div>
+      <div class="col-12">
+        <div class="form-check">
+          {{ form.is_active }}
+          <label class="form-check-label fw-semibold">Active Branch</label>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    <div class="mt-4 d-flex gap-2">
+      <button type="submit" class="btn btn-primary fw-bold px-4">{% if map_only %}Save Map{% else %}Save Branch{% endif %}</button>
+      <a href="{% url 'manage:branches_list' %}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<script>
+(function () {
+  var box = document.getElementById('mapPreviewBox');
+  if (!box) return;
+  var form = box.closest('form');
+  var frame = document.getElementById('mapPreviewFrame');
+  var empty = document.getElementById('mapPreviewEmpty');
+  var errorBox = document.getElementById('mapPreviewError');
+  var csrf = form.querySelector('input[name=csrfmiddlewaretoken]').value;
+  var timer = null, seq = 0;
+
+  function val(kind, fallback) {
+    var el = form.querySelector('[data-map-input="' + kind + '"]');
+    return el ? el.value : (fallback || '');
+  }
+
+  function show(state, text) {
+    errorBox.classList.toggle('d-none', state !== 'error');
+    empty.classList.toggle('d-none', state !== 'empty');
+    frame.classList.toggle('d-none', state !== 'map');
+    if (state === 'error') errorBox.textContent = text;
+  }
+
+  function refresh() {
+    var mine = ++seq;
+    var body = new URLSearchParams();
+    body.set('map_embed_url', val('embed'));
+    body.set('latitude', val('lat'));
+    body.set('longitude', val('lng'));
+    body.set('map_zoom', val('zoom'));
+    body.set('address', val('address', box.dataset.address));
+    body.set('town', val('town', box.dataset.town));
+    fetch(box.dataset.url, {
+      method: 'POST',
+      headers: {'X-CSRFToken': csrf, 'Content-Type': 'application/x-www-form-urlencoded'},
+      body: body.toString(),
+      credentials: 'same-origin'
+    }).then(function (r) { return r.json(); }).then(function (data) {
+      if (mine !== seq) return;
+      if (!data.ok) { show('error', data.error); return; }
+      if (!data.src) { frame.removeAttribute('src'); show('empty'); return; }
+      if (frame.getAttribute('src') !== data.src) frame.setAttribute('src', data.src);
+      show('map');
+    }).catch(function () { if (mine === seq) show('error', 'Could not load the preview.'); });
+  }
+
+  function schedule() { clearTimeout(timer); timer = setTimeout(refresh, 450); }
+  form.querySelectorAll('[data-map-input]').forEach(function (el) {
+    el.addEventListener('input', schedule);
+    el.addEventListener('change', schedule);
+  });
+  refresh();
+})();
+</script>
+{% endblock %}

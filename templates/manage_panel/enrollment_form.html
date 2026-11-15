@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Enroll a Student - Site Management{% endblock %}
+{% block page_title %}Enroll a Student{% endblock %}
+{% block page_subtitle %}Register a new student (Age 18+) or enroll an existing student into a driving course{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-10">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-person-plus-fill text-primary me-2"></i>Staff Student Enrollment Form</h6>
+        {% if is_super_admin %}
+          <span class="badge bg-success"><i class="bi bi-lightning-fill me-1"></i>Super Admin: Auto-Approved</span>
+        {% else %}
+          <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Admin: Pending Super Admin Approval</span>
+        {% endif %}
+      </div>
+      <div class="card-body p-4">
+        {% if form.errors %}
+        <div class="alert alert-danger">
+          <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Please correct the following errors:</div>
+          {% if form.non_field_errors %}
+            <div>{{ form.non_field_errors }}</div>
+          {% endif %}
+          <ul class="mb-0 small">
+            {% for field in form %}
+              {% for err in field.errors %}
+                <li><strong>{{ field.label }}:</strong> {{ err }}</li>
+              {% endfor %}
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        <form method="post" novalidate id="staffEnrollmentForm">
+          {% csrf_token %}
+
+          <!-- 1. Student Selection Mode -->
+          <div class="p-3 rounded-3 bg-light border mb-4">
+            <label class="form-label fw-bold text-dark mb-2">1. Select Student Mode</label>
+            <div class="d-flex flex-wrap gap-4">
+              {% for radio in form.student_mode %}
+              <div class="form-check">
+                {{ radio.tag }}
+                <label class="form-check-label fw-semibold" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Existing Student Picker Panel -->
+          <div id="existingStudentPanel" class="p-3 rounded-3 border mb-4" style="display: none;">
+            <label class="form-label fw-bold">Search &amp; Pick Existing Student <span class="text-danger">*</span></label>
+            <input type="text" id="studentQuickSearch" class="form-control form-control-sm mb-2" placeholder="Type name, ID number, or email to filter list...">
+            {{ form.existing_student }}
+            {% if form.existing_student.errors %}<div class="text-danger small mt-1">{{ form.existing_student.errors.0 }}</div>{% endif %}
+          </div>
+
+          <!-- New Student Fields Panel -->
+          <div id="newStudentPanel" class="mb-4">
+            <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">Student Personal Details (Age 18+ Required)</h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">First Name <span class="text-danger">*</span></label>
+                {{ form.first_name }}
+                {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Last Name <span class="text-danger">*</span></label>
+                {{ form.last_name }}
+                {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Email Address <span class="text-danger">*</span></label>
+                {{ form.email }}
+                {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Phone Number <span class="text-danger">*</span></label>
+                {{ form.phone }}
+                {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold small">National ID / Passport <span class="text-danger">*</span></label>
+                {{ form.id_number }}
+                {% if form.id_number.errors %}<div class="text-danger small mt-1">{{ form.id_number.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold small">Date of Birth (18+ Only) <span class="text-danger">*</span></label>
+                {{ form.date_of_birth }}
+                {% if form.date_of_birth.errors %}<div class="text-danger small fw-bold mt-1">{{ form.date_of_birth.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold small">Gender</label>
+                {{ form.gender }}
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Branch, Course & Schedule -->
+          <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">2. Branch, Course &amp; Schedule</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Training Branch <span class="text-danger">*</span></label>
+              {{ form.branch }}
+              {% if form.branch.errors %}<div class="text-danger small mt-1">{{ form.branch.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Driving Course <span class="text-danger">*</span></label>
+              {{ form.course }}
+              {% if form.course.errors %}<div class="text-danger small mt-1">{{ form.course.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Start Date</label>
+              {{ form.start_date }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Preferred Schedule</label>
+              {{ form.preferred_schedule }}
+            </div>
+          </div>
+
+          <!-- 3. Fee, Optional Discount & First Payment -->
+          <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">3. Course Fee, Discount &amp; First Payment</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Total Course Fee (KES)</label>
+              {{ form.total_fee }}
+              <div class="form-text small">Defaults to selected course fee; editable by staff.</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Discount Amount (KES)</label>
+              {{ form.discount_amount }}
+              {% if form.discount_amount.errors %}<div class="text-danger small mt-1">{{ form.discount_amount.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Discount Reason</label>
+              {{ form.discount_reason }}
+              {% if form.discount_reason.errors %}<div class="text-danger small mt-1">{{ form.discount_reason.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">First Payment Amount (KES)</label>
+              {{ form.initial_payment_amount }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Payment Method</label>
+              {{ form.payment_method }}
+              {% if form.payment_method.errors %}<div class="text-danger small mt-1">{{ form.payment_method.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">M-Pesa / Receipt Reference</label>
+              {{ form.payment_reference }}
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold small">Internal Staff Notes</label>
+              {{ form.notes }}
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+            <a href="{% url 'manage:enrollments_list' %}" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left me-1"></i>Cancel
+            </a>
+            <button type="submit" class="btn btn-primary fw-bold px-4">
+              <i class="bi bi-check2-circle me-1"></i>Complete Enrollment
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ courses_meta|json_script:"coursesMetaJson" }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var existingPanel = document.getElementById('existingStudentPanel');
+  var newPanel = document.getElementById('newStudentPanel');
+  var radios = document.querySelectorAll('input[name="student_mode"]');
+
+  function syncModePanels() {
+    var selected = 'new';
+    radios.forEach(function(r) { if (r.checked) selected = r.value; });
+    if (selected === 'existing') {
+      existingPanel.style.display = 'block';
+      newPanel.style.display = 'none';
+    } else {
+      existingPanel.style.display = 'none';
+      newPanel.style.display = 'block';
+    }
+  }
+  radios.forEach(function(r) { r.addEventListener('change', syncModePanels); });
+  syncModePanels();
+
+  // Search filter for existing student dropdown
+  var searchInput = document.getElementById('studentQuickSearch');
+  var studentSelect = document.getElementById('id_existing_student');
+  if (searchInput && studentSelect) {
+    var allOptions = Array.from(studentSelect.options);
+    searchInput.addEventListener('input', function() {
+      var q = searchInput.value.toLowerCase().trim();
+      var currentVal = studentSelect.value;
+      studentSelect.innerHTML = '';
+      allOptions.forEach(function(opt) {
+        if (!opt.value || !q || opt.text.toLowerCase().indexOf(q) !== -1 || opt.value === currentVal) {
+          studentSelect.appendChild(opt);
+        }
+      });
+    });
+  }
+
+  // Dynamic branch -> course filter & auto-populated fee
+  var coursesMetaEl = document.getElementById('coursesMetaJson');
+  var branchSelect = document.getElementById('id_branch');
+  var courseSelect = document.getElementById('id_course');
+  var feeInput = document.getElementById('id_total_fee');
+  if (coursesMetaEl && branchSelect && courseSelect) {
+    var coursesMeta = JSON.parse(coursesMetaEl.textContent || '[]');
+    var courseMap = {};
+    coursesMeta.forEach(function(c) { courseMap[String(c.id)] = c; });
+
+    branchSelect.addEventListener('change', function() {
+      var bId = parseInt(branchSelect.value, 10);
+      Array.from(courseSelect.options).forEach(function(opt) {
+        if (!opt.value) return;
+        var meta = courseMap[String(opt.value)];
+        if (meta && bId && meta.branch_ids && meta.branch_ids.length > 0) {
+          opt.hidden = meta.branch_ids.indexOf(bId) === -1;
+        } else {
+          opt.hidden = false;
+        }
+      });
+    });
+
+    courseSelect.addEventListener('change', function() {
+      var meta = courseMap[String(courseSelect.value)];
+      if (meta && feeInput) {
+        feeInput.value = meta.fee;
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

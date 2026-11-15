@@ -2,71 +2,494 @@
 
 {% block title %}{{ title }} - Site Management{% endblock %}
 {% block page_title %}{{ title }}{% endblock %}
-{% block page_subtitle %}Upload or update gallery image, category, and display order{% endblock %}
+{% block page_subtitle %}Fast multi-photo batch uploader with client-side compression &amp; responsive WebP variant generation{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-lg-6">
+  <div class="col-lg-9">
+    {% if image %}
+    <!-- Single Photo Edit Mode -->
     <div class="card shadow-sm border-0">
       <div class="card-header bg-white py-3">
-        <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-image me-2"></i>Photo Details</h6>
+        <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-pencil-square me-2"></i>Edit Gallery Photo</h6>
       </div>
       <div class="card-body">
         <form method="post" enctype="multipart/form-data">
           {% csrf_token %}
-
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Photo Title <span class="text-danger">*</span></label>
-            {{ form.title }}
-            {% if form.title.errors %}<div class="text-danger small">{{ form.title.errors }}</div>{% endif %}
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Photo File {% if not image %}<span class="text-danger">*</span>{% endif %}</label>
-            {{ form.image }}
-            {% if form.image.errors %}<div class="text-danger small">{{ form.image.errors }}</div>{% endif %}
-            {% if image and image.image %}
-              <div class="mt-2 small text-muted">Current: <a href="{{ image.image.url }}" target="_blank">{{ image.image.name }}</a></div>
-            {% endif %}
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Category</label>
-            {{ form.category }}
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Alt Text (Accessibility & SEO)</label>
-            {{ form.alt_text }}
-          </div>
-
-          <div class="row g-3 mb-4">
-            <div class="col-sm-6">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Photo Title <span class="text-danger">*</span></label>
+              {{ form.title }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Gallery Category</label>
+              {{ form.category_obj }}
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Replace Photo File (Optional)</label>
+              {% if image.image %}
+              <div class="mb-2">
+                <img src="{{ image.grid_url }}" alt="{{ image.title }}" class="rounded border" style="height: 110px; width: 150px; object-fit: cover;">
+              </div>
+              {% endif %}
+              {{ form.image }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Caption / Subtitle</label>
+              {{ form.caption }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Alt Text (Accessibility &amp; SEO)</label>
+              {{ form.alt_text }}
+            </div>
+            <div class="col-md-4">
               <label class="form-label fw-semibold">Display Order</label>
               {{ form.order }}
             </div>
-            <div class="col-sm-6 d-flex align-items-center pt-3">
+            <div class="col-md-4 d-flex align-items-center pt-3">
               <div class="form-check">
-                {{ form.is_featured }}
-                <label class="form-check-label fw-semibold" for="{{ form.is_featured.id_for_label }}">
-                  Feature on Homepage
-                </label>
+                {{ form.is_featured_home }}
+                <label class="form-check-label fw-semibold" for="{{ form.is_featured_home.id_for_label }}">Featured on Home</label>
+              </div>
+            </div>
+            <div class="col-md-4 d-flex align-items-center pt-3">
+              <div class="form-check">
+                {{ form.is_active }}
+                <label class="form-check-label fw-semibold" for="{{ form.is_active.id_for_label }}">Published (Active)</label>
               </div>
             </div>
           </div>
-
-          <div class="d-flex justify-content-between">
-            <a href="{% url 'manage:gallery_list' %}" class="btn btn-secondary">
-              <i class="bi bi-arrow-left me-1"></i> Back to Gallery
-            </a>
-            <button type="submit" class="btn btn-primary px-4">
-              <i class="bi bi-check-lg me-1"></i> Save Photo
-            </button>
+          <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+            <a href="{% url 'manage:gallery_list' %}" class="btn btn-outline-secondary">Back to Gallery</a>
+            <button type="submit" class="btn btn-primary fw-bold px-4">Save Changes</button>
           </div>
         </form>
       </div>
     </div>
+
+    {% else %}
+    <!-- Multi-Photo Fast Batch Upload Mode -->
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+          <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-cloud-arrow-up-fill me-2"></i>Fast Multi-Photo Batch Uploader</h6>
+          <small class="text-muted">Select 10, 20, or more photos at once &bull; Client-side resize (max 2000px @ 0.85 quality) &bull; 3 parallel uploads</small>
+        </div>
+        <a href="{% url 'manage:gallery_list' %}" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-grid-3x3-gap me-1"></i>Back to Gallery Grid
+        </a>
+      </div>
+      <div class="card-body p-4">
+        {% if failed_files %}
+        <div class="alert alert-danger">
+          <div class="fw-bold mb-1">{{ summary_text }}</div>
+          <ul class="small mb-0">
+            {% for f in failed_files %}
+            <li><strong>{{ f.filename }}:</strong> {{ f.reason }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        <!-- Batch Results Banner (populated after parallel upload) -->
+        <div id="batchSummaryBanner" class="alert d-none mb-4" role="alert"></div>
+
+        <form method="post" enctype="multipart/form-data" id="multiPhotoUploadForm" action="{% url 'manage:gallery_create' %}">
+          {% csrf_token %}
+
+          <!-- Drag-and-Drop Multi-File Zone -->
+          <div id="dropZone" class="p-4 mb-4 text-center rounded-3 border border-2 border-primary border-opacity-50 bg-light" style="border-style: dashed !important; cursor: pointer;">
+            <i class="bi bi-images display-5 text-primary d-block mb-2"></i>
+            <h6 class="fw-bold mb-1">Drag &amp; Drop Multiple Photos Here, or Click to Browse</h6>
+            <p class="small text-muted mb-3">Supports JPEG, PNG, WebP, GIF (max 8 MB per original photo; auto-resized before upload)</p>
+            <input type="file" name="images" id="id_gallery_images" class="form-control" multiple accept="image/jpeg,image/png,image/webp,image/gif">
+          </div>
+
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 p-2 px-3 rounded bg-success-subtle text-success-emphasis small">
+            <div class="form-check mb-0">
+              <input class="form-check-input" type="checkbox" id="enableClientCompression" checked>
+              <label class="form-check-label fw-semibold" for="enableClientCompression">
+                Fast Client-Side Compression (Max 2000px longest side, WebP/JPEG 0.85 quality)
+              </label>
+            </div>
+            <span id="compressionSavingsBadge" class="fw-bold"></span>
+          </div>
+
+          <!-- Shared Batch Metadata -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Gallery Category</label>
+              {{ batch_form.category_obj }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Optional Title Prefix</label>
+              <input type="text" name="title_prefix" id="id_title_prefix" class="form-control" placeholder="Defaults to each filename">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Default Caption (Optional)</label>
+              <input type="text" name="default_caption" id="id_default_caption" class="form-control" placeholder="Shared caption for batch">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Starting Display Order</label>
+              <input type="number" name="order" id="id_order" value="0" class="form-control">
+            </div>
+            <div class="col-md-4 d-flex align-items-center pt-3">
+              <div class="form-check">
+                <input type="checkbox" name="is_featured_home" id="id_is_featured_home" class="form-check-input" checked>
+                <label class="form-check-label fw-semibold" for="id_is_featured_home">Show on Home Page</label>
+              </div>
+            </div>
+            <div class="col-md-4 d-flex align-items-center pt-3">
+              <div class="form-check">
+                <input type="checkbox" name="is_active" id="id_is_active" class="form-check-input" checked>
+                <label class="form-check-label fw-semibold" for="id_is_active">Published Immediately</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Per-File Queue with Progress Bars, Cancel & Retry -->
+          <div id="uploadQueueContainer" class="d-none mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="fw-bold mb-0">Upload Queue (<span id="queueCountText">0</span> files)</h6>
+              <span id="overallProgressText" class="small fw-semibold text-primary"></span>
+            </div>
+            <div id="uploadQueueList" class="list-group small"></div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+            <a href="{% url 'manage:gallery_list' %}" class="btn btn-outline-secondary">Cancel</a>
+            <div class="d-flex gap-2">
+              <button type="submit" id="startBatchUploadBtn" class="btn btn-primary fw-bold px-4">
+                <i class="bi bi-cloud-upload me-1"></i>Upload Selected Photos
+              </button>
+              <a href="{% url 'manage:gallery_list' %}" id="goToGalleryBtn" class="btn btn-success fw-bold d-none">
+                <i class="bi bi-check2-all me-1"></i>Done — Edit Captions &amp; Order in Gallery
+              </a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+    (function() {
+      var fileInput = document.getElementById('id_gallery_images');
+      var dropZone = document.getElementById('dropZone');
+      var form = document.getElementById('multiPhotoUploadForm');
+      var queueContainer = document.getElementById('uploadQueueContainer');
+      var queueList = document.getElementById('uploadQueueList');
+      var queueCountText = document.getElementById('queueCountText');
+      var overallProgressText = document.getElementById('overallProgressText');
+      var savingsBadge = document.getElementById('compressionSavingsBadge');
+      var summaryBanner = document.getElementById('batchSummaryBanner');
+      var startBtn = document.getElementById('startBatchUploadBtn');
+      var goToGalleryBtn = document.getElementById('goToGalleryBtn');
+      var compressCheckbox = document.getElementById('enableClientCompression');
+      var uploadApiUrl = "{% url 'manage:gallery_upload_api' %}";
+      var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+      var queueItems = [];
+      var totalOriginalBytes = 0;
+      var totalCompressedBytes = 0;
+
+      function formatBytes(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(2) + ' MB';
+      }
+
+      // Client-side <canvas> resize to max 2000px longest side @ 0.85 quality
+      function compressImageFile(file) {
+        return new Promise(function(resolve) {
+          if (!compressCheckbox || !compressCheckbox.checked || !file.type.startsWith('image/') || file.type === 'image/gif') {
+            resolve(file);
+            return;
+          }
+          var img = new Image();
+          var url = URL.createObjectURL(file);
+          img.onload = function() {
+            URL.revokeObjectURL(url);
+            var w = img.naturalWidth || img.width;
+            var h = img.naturalHeight || img.height;
+            var maxSide = 2000;
+            if (w > maxSide || h > maxSide) {
+              if (w >= h) {
+                h = Math.round(h * (maxSide / w));
+                w = maxSide;
+              } else {
+                w = Math.round(w * (maxSide / h));
+                h = maxSide;
+              }
+            }
+            var canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            canvas.toBlob(function(blob) {
+              if (!blob || blob.size >= file.size) {
+                resolve(file);
+                return;
+              }
+              var baseName = file.name.replace(/\.[^/.]+$/, '');
+              var resizedFile = new File([blob], baseName + '.webp', { type: 'image/webp', lastModified: Date.now() });
+              resolve(resizedFile);
+            }, 'image/webp', 0.85);
+          };
+          img.onerror = function() {
+            URL.revokeObjectURL(url);
+            resolve(file);
+          };
+          img.src = url;
+        });
+      }
+
+      function addFilesToQueue(fileList) {
+        queueItems = [];
+        queueList.innerHTML = '';
+        totalOriginalBytes = 0;
+        totalCompressedBytes = 0;
+
+        Array.from(fileList).forEach(function(file, idx) {
+          totalOriginalBytes += file.size;
+          var item = {
+            index: idx,
+            rawFile: file,
+            uploadFile: file,
+            status: 'pending', // pending | uploading | done | error | cancelled
+            xhr: null,
+            rowEl: null,
+            barEl: null,
+            statusEl: null,
+            cancelBtn: null,
+            retryBtn: null
+          };
+
+          var row = document.createElement('div');
+          row.className = 'list-group-item d-flex flex-column gap-1';
+          row.innerHTML =
+            '<div class="d-flex justify-content-between align-items-center">' +
+              '<div class="fw-semibold text-truncate" style="max-width: 55%;">' + file.name + ' <span class="text-muted fw-normal">(' + formatBytes(file.size) + ')</span></div>' +
+              '<div class="d-flex align-items-center gap-2">' +
+                '<span class="item-status badge bg-secondary">Queued</span>' +
+                '<button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 item-cancel d-none">Cancel</button>' +
+                '<button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 item-retry d-none">Retry</button>' +
+              '</div>' +
+            '</div>' +
+            '<div class="progress" style="height: 6px;">' +
+              '<div class="progress-bar" role="progressbar" style="width: 0%;"></div>' +
+            '</div>';
+
+          item.rowEl = row;
+          item.barEl = row.querySelector('.progress-bar');
+          item.statusEl = row.querySelector('.item-status');
+          item.cancelBtn = row.querySelector('.item-cancel');
+          item.retryBtn = row.querySelector('.item-retry');
+
+          item.cancelBtn.addEventListener('click', function() {
+            if (item.xhr && item.status === 'uploading') {
+              item.xhr.abort();
+            }
+            item.status = 'cancelled';
+            item.statusEl.className = 'item-status badge bg-warning text-dark';
+            item.statusEl.textContent = 'Cancelled';
+            item.cancelBtn.classList.add('d-none');
+            item.retryBtn.classList.remove('d-none');
+          });
+
+          item.retryBtn.addEventListener('click', function() {
+            item.status = 'pending';
+            item.barEl.style.width = '0%';
+            item.barEl.className = 'progress-bar';
+            item.statusEl.className = 'item-status badge bg-secondary';
+            item.statusEl.textContent = 'Queued';
+            item.retryBtn.classList.add('d-none');
+            runParallelUploadPool();
+          });
+
+          queueList.appendChild(row);
+          queueItems.push(item);
+        });
+
+        queueCountText.textContent = String(queueItems.length);
+        if (queueItems.length > 0) {
+          queueContainer.classList.remove('d-none');
+        }
+      }
+
+      if (fileInput) {
+        fileInput.addEventListener('change', function() {
+          addFilesToQueue(fileInput.files);
+        });
+      }
+
+      if (dropZone && fileInput) {
+        dropZone.addEventListener('click', function(e) {
+          if (e.target !== fileInput) fileInput.click();
+        });
+        dropZone.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          dropZone.classList.add('bg-primary-subtle');
+        });
+        dropZone.addEventListener('dragleave', function() {
+          dropZone.classList.remove('bg-primary-subtle');
+        });
+        dropZone.addEventListener('drop', function(e) {
+          e.preventDefault();
+          dropZone.classList.remove('bg-primary-subtle');
+          if (e.dataTransfer && e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            addFilesToQueue(e.dataTransfer.files);
+          }
+        });
+      }
+
+      var activeWorkers = 0;
+      var maxConcurrency = 3;
+
+      function updateSummaryState() {
+        var uploaded = queueItems.filter(function(i) { return i.status === 'done'; }).length;
+        var failed = queueItems.filter(function(i) { return i.status === 'error'; });
+        var pending = queueItems.filter(function(i) { return i.status === 'pending' || i.status === 'uploading'; }).length;
+        overallProgressText.textContent = uploaded + ' / ' + queueItems.length + ' uploaded';
+
+        if (totalOriginalBytes > 0 && totalCompressedBytes > 0 && totalCompressedBytes < totalOriginalBytes) {
+          var saved = totalOriginalBytes - totalCompressedBytes;
+          savingsBadge.textContent = 'Saved ' + formatBytes(saved) + ' via client-side resize';
+        }
+
+        if (pending === 0 && queueItems.length > 0) {
+          startBtn.disabled = false;
+          goToGalleryBtn.classList.remove('d-none');
+          summaryBanner.classList.remove('d-none', 'alert-success', 'alert-warning', 'alert-danger');
+          if (failed.length === 0) {
+            summaryBanner.classList.add('alert-success');
+            summaryBanner.innerHTML = '<strong><i class="bi bi-check-circle-fill me-1"></i>' + uploaded + ' uploaded, 0 failed.</strong> All photos processed with grid &amp; full-screen variants.';
+          } else {
+            summaryBanner.classList.add(uploaded > 0 ? 'alert-warning' : 'alert-danger');
+            var reasons = failed.map(function(f) { return f.rawFile.name + ' (' + (f.errorReason || 'Failed') + ')'; }).join('; ');
+            summaryBanner.innerHTML = '<strong>' + uploaded + ' uploaded, ' + failed.length + ' failed:</strong> ' + reasons;
+          }
+        }
+      }
+
+      function uploadSingleItem(item) {
+        return compressImageFile(item.rawFile).then(function(processedFile) {
+          item.uploadFile = processedFile;
+          totalCompressedBytes += processedFile.size;
+          return new Promise(function(resolve) {
+            item.status = 'uploading';
+            item.statusEl.className = 'item-status badge bg-primary';
+            item.statusEl.textContent = 'Uploading...';
+            item.cancelBtn.classList.remove('d-none');
+            item.retryBtn.classList.add('d-none');
+
+            var fd = new FormData();
+            fd.append('csrfmiddlewaretoken', csrfToken);
+            fd.append('images', processedFile, processedFile.name);
+            var catEl = document.getElementById('id_batch_category');
+            if (catEl && catEl.value) fd.append('category_obj', catEl.value);
+            var prefixEl = document.getElementById('id_title_prefix');
+            if (prefixEl && prefixEl.value) {
+              fd.append('title_prefix', queueItems.length > 1 ? (prefixEl.value + ' #' + (item.index + 1)) : prefixEl.value);
+            }
+            var capEl = document.getElementById('id_default_caption');
+            if (capEl && capEl.value) fd.append('default_caption', capEl.value);
+            var ordEl = document.getElementById('id_order');
+            fd.append('order', String((parseInt(ordEl ? ordEl.value : '0', 10) || 0) + item.index));
+            var featEl = document.getElementById('id_is_featured_home');
+            if (featEl && featEl.checked) fd.append('is_featured_home', 'on');
+            var actEl = document.getElementById('id_is_active');
+            if (actEl && actEl.checked) fd.append('is_active', 'on');
+
+            var xhr = new XMLHttpRequest();
+            item.xhr = xhr;
+            xhr.open('POST', uploadApiUrl, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+            xhr.upload.onprogress = function(e) {
+              if (e.lengthComputable) {
+                var pct = Math.round((e.loaded / e.total) * 100);
+                item.barEl.style.width = pct + '%';
+              }
+            };
+
+            xhr.onload = function() {
+              item.cancelBtn.classList.add('d-none');
+              try {
+                var resp = JSON.parse(xhr.responseText || '{}');
+                if (xhr.status === 200 && resp.uploaded_count > 0) {
+                  item.status = 'done';
+                  item.barEl.style.width = '100%';
+                  item.barEl.className = 'progress-bar bg-success';
+                  item.statusEl.className = 'item-status badge bg-success';
+                  item.statusEl.textContent = 'Uploaded (' + formatBytes(processedFile.size) + ')';
+                } else {
+                  item.status = 'error';
+                  item.errorReason = (resp.failed && resp.failed[0] && resp.failed[0].reason) || resp.summary || 'Invalid image';
+                  item.barEl.className = 'progress-bar bg-danger';
+                  item.statusEl.className = 'item-status badge bg-danger';
+                  item.statusEl.textContent = item.errorReason;
+                  item.retryBtn.classList.remove('d-none');
+                }
+              } catch (err) {
+                item.status = 'error';
+                item.errorReason = 'Server error (' + xhr.status + ')';
+                item.barEl.className = 'progress-bar bg-danger';
+                item.statusEl.className = 'item-status badge bg-danger';
+                item.statusEl.textContent = item.errorReason;
+                item.retryBtn.classList.remove('d-none');
+              }
+              resolve();
+            };
+
+            xhr.onerror = function() {
+              item.cancelBtn.classList.add('d-none');
+              item.status = 'error';
+              item.errorReason = 'Network error';
+              item.barEl.className = 'progress-bar bg-danger';
+              item.statusEl.className = 'item-status badge bg-danger';
+              item.statusEl.textContent = 'Network Error';
+              item.retryBtn.classList.remove('d-none');
+              resolve();
+            };
+
+            xhr.onabort = function() {
+              resolve();
+            };
+
+            xhr.send(fd);
+          });
+        });
+      }
+
+      function runParallelUploadPool() {
+        while (activeWorkers < maxConcurrency) {
+          var nextItem = queueItems.find(function(i) { return i.status === 'pending'; });
+          if (!nextItem) break;
+          nextItem.status = 'uploading';
+          activeWorkers++;
+          uploadSingleItem(nextItem).then(function() {
+            activeWorkers--;
+            updateSummaryState();
+            runParallelUploadPool();
+          });
+        }
+        updateSummaryState();
+      }
+
+      if (form) {
+        form.addEventListener('submit', function(e) {
+          if (queueItems.length > 0 && window.XMLHttpRequest && window.FormData) {
+            e.preventDefault();
+            startBtn.disabled = true;
+            runParallelUploadPool();
+          }
+        });
+      }
+    })();
+    </script>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
-

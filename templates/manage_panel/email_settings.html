@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Email Configuration - Site Management{% endblock %}
+{% block page_title %}SMTP Email Configuration (Super Admin Exclusive){% endblock %}
+{% block page_subtitle %}Configure outgoing SMTP credentials with Fernet encryption{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="content-card">
+      <h5 class="fw-bold mb-3">SMTP Server Settings</h5>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="save">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">SMTP Host</label>
+            {{ form.smtp_host }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">SMTP Port</label>
+            {{ form.smtp_port }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Security Protocol</label>
+            {{ form.security_protocol }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">SMTP Username / Email</label>
+            {{ form.smtp_username }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">
+              SMTP Password / App Password
+              {% if email_cfg.has_password %}
+                <span class="badge bg-success ms-1"><i class="bi bi-lock-fill"></i> Password is set</span>
+              {% else %}
+                <span class="badge bg-secondary ms-1">Not set</span>
+              {% endif %}
+            </label>
+            {{ form.smtp_password }}
+            {% if email_cfg.has_password %}
+            <div class="form-check mt-1">
+              {{ form.clear_password }}
+              <label class="form-check-label small text-muted">Clear stored password</label>
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Default From Name</label>
+            {{ form.default_from_name }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Default From Email</label>
+            {{ form.default_from_email }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Reply-To Email</label>
+            {{ form.reply_to_email }}
+          </div>
+
+          <div class="col-12">
+            <div class="form-check form-switch">
+              {{ form.is_enabled }}
+              <label class="form-check-label fw-semibold">Enable Live Outgoing SMTP Email</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <button type="submit" class="btn btn-primary fw-bold px-4">
+            <i class="bi bi-shield-lock me-1"></i> Save & Encrypt Email Settings
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="content-card">
+      <h5 class="fw-bold mb-2">Send Test Email</h5>
+      <p class="small text-muted mb-3">Verify your SMTP credentials by sending a real test email now.</p>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="send_test_email">
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Test Recipient Email</label>
+          <input type="email" name="test_recipient" class="form-control" value="{{ request.user.email }}" placeholder="you@example.com" required>
+        </div>
+        <button type="submit" class="btn btn-warning fw-bold w-100">
+          <i class="bi bi-send-check me-1"></i> Send Test Email
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

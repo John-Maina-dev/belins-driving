@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Compose Email - Site Management{% endblock %}
+{% block page_title %}Compose & Send Email (Super Admin Exclusive){% endblock %}
+{% block page_subtitle %}Send official messages to students, instructors, or groups{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="content-card">
+      <h5 class="fw-bold mb-3">Compose New Email</h5>
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Recipient Type</label>
+          <select name="target_type" id="id_target_type" class="form-select">
+            <option value="custom">Custom Email Address(es)</option>
+            <option value="student">Specific Student</option>
+            <option value="instructor">Specific Instructor</option>
+            <option value="all_students">All Students</option>
+            <option value="all_instructors">All Instructors</option>
+          </select>
+        </div>
+
+        <div class="mb-3" id="customEmailBox">
+          <label class="form-label fw-semibold">Recipient Email</label>
+          <input type="text" name="custom_email" class="form-control" placeholder="student@example.com">
+        </div>
+
+        <div class="mb-3" id="studentSelectBox" style="display: none;">
+          <label class="form-label fw-semibold">Select Student</label>
+          <select name="student_id" class="form-select">
+            <option value="">-- Choose Student --</option>
+            {% for s in students %}
+            <option value="{{ s.id }}">{{ s.full_name }} ({{ s.email }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-3" id="instructorSelectBox" style="display: none;">
+          <label class="form-label fw-semibold">Select Instructor</label>
+          <select name="instructor_id" class="form-select">
+            <option value="">-- Choose Instructor --</option>
+            {% for i in instructors %}
+            <option value="{{ i.id }}">{{ i.full_name }} ({{ i.email }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Subject <span class="text-danger">*</span></label>
+          <input type="text" name="subject" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Message Body <span class="text-danger">*</span></label>
+          <textarea name="body" rows="6" class="form-control" required></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary fw-bold px-4">
+          <i class="bi bi-send-fill me-1"></i> Send Email
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="content-card">
+      <h5 class="fw-bold mb-3">Recent Outgoing Email Log</h5>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Time</th>
+              <th>Recipient</th>
+              <th>Subject</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in recent_logs %}
+            <tr>
+              <td class="small text-muted">{{ log.sent_at|date:"Y-m-d H:i" }}</td>
+              <td class="small">{{ log.recipient }}</td>
+              <td class="small fw-semibold">{{ log.subject|truncatechars:35 }}</td>
+              <td>
+                {% if log.status == 'SENT' %}
+                  <span class="badge bg-success">Sent</span>
+                {% else %}
+                  <span class="badge bg-danger" title="{{ log.error_message }}">Failed</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center py-3 text-muted">No emails sent yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const targetType = document.getElementById('id_target_type');
+  const customBox = document.getElementById('customEmailBox');
+  const studentBox = document.getElementById('studentSelectBox');
+  const instBox = document.getElementById('instructorSelectBox');
+  if (targetType) {
+    targetType.addEventListener('change', function() {
+      customBox.style.display = this.value === 'custom' ? '' : 'none';
+      studentBox.style.display = this.value === 'student' ? '' : 'none';
+      instBox.style.display = this.value === 'instructor' ? '' : 'none';
+    });
+  }
+</script>
+{% endblock %}
+

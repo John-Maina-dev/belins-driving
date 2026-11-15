@@ -4,14 +4,11 @@
 {% block title %}Frequently Asked Questions (FAQ) - {{ site_settings.school_name|default:"Belings Driving School" }}{% endblock %}
 
 {% block content %}
-<!-- Header -->
 <div class="py-5 text-white" style="background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-dark));">
   <div class="container py-3">
     <div class="row align-items-center">
       <div class="col-md-8">
-        <span class="badge bg-warning text-dark px-3 py-1 mb-2 font-monospace">HELP & ADVICE</span>
         <h1 class="display-5 fw-bold text-white mb-2">Frequently Asked Questions</h1>
-        <p class="lead mb-0 text-white-50">Got questions about admissions, requirements, NTSA test bookings, or schedules? Find answers below.</p>
       </div>
       <div class="col-md-4 text-md-end mt-3 mt-md-0">
         <a href="{% url 'website:contact' %}" class="btn btn-outline-light btn-lg">
@@ -22,10 +19,9 @@
   </div>
 </div>
 
-<!-- FAQ Accordion Section -->
 <section class="py-5" style="background-color: var(--body-bg);">
   <div class="container py-lg-4" style="max-width: 900px;">
-
+    {% if faqs %}
     <div class="accordion accordion-flush shadow-sm rounded-4 overflow-hidden bg-white border" id="faqAccordion">
       {% for faq in faqs %}
       <div class="accordion-item">
@@ -48,87 +44,13 @@
           </div>
         </div>
       </div>
-      {% empty %}
-      <!-- Default Kenyan driving school FAQs -->
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingDef1">
-          <button class="accordion-button fw-bold text-primary py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDef1" aria-expanded="true">
-            <i class="bi bi-question-circle-fill text-warning me-2 fs-5"></i> What are the requirements to enroll in Belings Driving School?
-          </button>
-        </h2>
-        <div id="collapseDef1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
-          <div class="accordion-body text-secondary" style="line-height: 1.8;">
-            To register, you need:
-            <ul>
-              <li>Original and copy of Kenyan National ID / Passport (or Alien ID for foreign residents).</li>
-              <li>Two (2) recent colored passport-size photographs.</li>
-              <li>Be at least 18 years of age for Category A and B, or 21+ for Commercial Category C and D.</li>
-              <li>An active eCitizen / TIMS account (our admissions staff helps you create one for free if you don't have it).</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingDef2">
-          <button class="accordion-button collapsed fw-bold text-primary py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDef2">
-            <i class="bi bi-question-circle-fill text-warning me-2 fs-5"></i> Can I pay the course fee in installments?
-          </button>
-        </h2>
-        <div id="collapseDef2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-          <div class="accordion-body text-secondary" style="line-height: 1.8;">
-            Yes! Belings Driving School allows a flexible 3-part installment plan:
-            <ul>
-              <li><strong>1st Installment (50%):</strong> Paid upon admission / first day of class.</li>
-              <li><strong>2nd Installment (30%):</strong> Paid midway through your practical sessions.</li>
-              <li><strong>3rd Installment (20%):</strong> Paid before your official NTSA driving examination booking.</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingDef3">
-          <button class="accordion-button collapsed fw-bold text-primary py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDef3">
-            <i class="bi bi-question-circle-fill text-warning me-2 fs-5"></i> How long does a driving course take?
-          </button>
-        </h2>
-        <div id="collapseDef3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-          <div class="accordion-body text-secondary" style="line-height: 1.8;">
-            Standard courses typically run for <strong>3 to 4 weeks</strong> depending on your daily lesson availability. We offer morning shifts, afternoon shifts, evening classes for working professionals, and an accelerated Saturday-intensive schedule.
-          </div>
-        </div>
-      </div>
-
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingDef4">
-          <button class="accordion-button collapsed fw-bold text-primary py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDef4">
-            <i class="bi bi-question-circle-fill text-warning me-2 fs-5"></i> Does Belings help with the NTSA driving test and Interim License?
-          </button>
-        </h2>
-        <div id="collapseDef4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-          <div class="accordion-body text-secondary" style="line-height: 1.8;">
-            Absolutely! Our administrative office handles your test booking submission to the NTSA testing centre, provides our dual-control training vehicle for your exam day, and assists you in downloading and generating your Interim Driving License immediately after passing.
-          </div>
-        </div>
-      </div>
       {% endfor %}
     </div>
-
-    <!-- Contact Support Card -->
-    <div class="card border-0 shadow-sm rounded-4 p-4 mt-5 bg-white text-center">
-      <h5 class="font-heading text-primary mb-2">Still Have Questions?</h5>
-      <p class="text-muted small mb-3">Reach out to our customer care team anytime or visit our offices.</p>
-      <div class="d-flex justify-content-center gap-2">
-        <a href="{% url 'website:contact' %}" class="btn btn-brand-primary btn-sm">Contact Us</a>
-        <a href="https://wa.me/{{ site_settings.whatsapp_number|default:'254700123456' }}?text=Hello%20Belings%20Driving%20School,%20I%20have%20a%20question."
-           class="btn btn-whatsapp btn-sm text-white" target="_blank" rel="noopener">
-          <i class="bi bi-whatsapp"></i> Chat with Us
-        </a>
-      </div>
+    {% else %}
+    <div class="text-center py-5">
+      <p class="text-muted mb-0">No FAQs have been published yet.</p>
     </div>
-
+    {% endif %}
   </div>
 </section>
 {% endblock %}
-

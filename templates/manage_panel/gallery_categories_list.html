@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Gallery Categories - Site Management{% endblock %}
+{% block page_title %}Gallery Categories{% endblock %}
+{% block page_subtitle %}Manage photo categories (Practical, Theory, Classroom, Vehicles, Events, etc.){% endblock %}
+
+{% block content %}
+<div class="content-card">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="fw-bold mb-0">Gallery Categories</h5>
+    <div class="d-flex gap-2">
+      <a href="{% url 'manage:gallery_list' %}" class="btn btn-outline-secondary btn-sm">Back to Gallery Images</a>
+      <a href="{% url 'manage:gallery_category_create' %}" class="btn btn-primary btn-sm fw-bold">
+        <i class="bi bi-plus-lg me-1"></i> Add Category
+      </a>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Order</th>
+          <th>Category Name</th>
+          <th>Slug</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cat in categories %}
+        <tr>
+          <td>{{ cat.order }}</td>
+          <td class="fw-bold">{{ cat.name }}</td>
+          <td><code>{{ cat.slug }}</code></td>
+          <td>
+            {% if cat.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}
+          </td>
+          <td class="text-end">
+            <a href="{% url 'manage:gallery_category_edit' cat.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+            <a href="{% url 'manage:gallery_category_delete' cat.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center py-4 text-muted">No gallery categories created yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Homepage Sections - Site Management{% endblock %}
+{% block page_title %}Homepage Sections Visibility & Order{% endblock %}
+{% block page_subtitle %}Control which sections render on the public homepage and in what order{% endblock %}
+
+{% block content %}
+<div class="content-card">
+  <div class="alert alert-info small mb-4">
+    <i class="bi bi-info-circle-fill me-2"></i>
+    A homepage section is rendered on the public site <strong>only if</strong> it is enabled below <strong>and</strong> has admin-created content.
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Section Key</th>
+            <th>Section Title</th>
+            <th style="width: 160px;">Display Order</th>
+            <th class="text-center">Enabled on Homepage</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sec in sections %}
+          <tr>
+            <td><code>{{ sec.section_key }}</code></td>
+            <td class="fw-bold">{{ sec.title }}</td>
+            <td>
+              <input type="number" name="order_{{ sec.section_key }}" value="{{ sec.order }}" class="form-control form-control-sm">
+            </td>
+            <td class="text-center">
+              <div class="form-check form-switch d-inline-block">
+                <input class="form-check-input" type="checkbox" name="enabled_{{ sec.section_key }}" id="sec_{{ sec.section_key }}" {% if sec.is_enabled %}checked{% endif %}>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="mt-3 text-end">
+      <button type="submit" class="btn btn-primary fw-bold px-4">
+        <i class="bi bi-check2-circle me-1"></i> Save Section Settings
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+

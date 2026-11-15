@@ -16,48 +16,97 @@
           {% csrf_token %}
 
           <div class="row g-3 mb-3">
-            <div class="col-sm-8">
+            <div class="col-sm-6">
               <label class="form-label fw-semibold">Course Name <span class="text-danger">*</span></label>
               {{ form.name }}
               {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif %}
             </div>
-            <div class="col-sm-4">
-              <label class="form-label fw-semibold">License Category <span class="text-danger">*</span></label>
-              {{ form.category }}
-              {% if form.category.errors %}<div class="text-danger small">{{ form.category.errors }}</div>{% endif %}
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Slug (URL identifier)</label>
+              {{ form.slug }}
+              {% if form.slug.errors %}<div class="text-danger small">{{ form.slug.errors }}</div>{% endif %}
+              <div class="form-text">Leave blank to auto-generate from name</div>
             </div>
           </div>
 
           <div class="row g-3 mb-3">
-            <div class="col-sm-4">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">License Category <span class="text-danger">*</span></label>
+              {{ form.license_category }}
+              {% if form.license_category.errors %}<div class="text-danger small">{{ form.license_category.errors }}</div>{% endif %}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Category Display Label</label>
+              {{ form.category_display }}
+              {% if form.category_display.errors %}<div class="text-danger small">{{ form.category_display.errors }}</div>{% endif %}
+              <div class="form-text">e.g. Category B (Light Vehicle)</div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-3">
               <label class="form-label fw-semibold">Tuition Fee (KES) <span class="text-danger">*</span></label>
               {{ form.fee }}
               {% if form.fee.errors %}<div class="text-danger small">{{ form.fee.errors }}</div>{% endif %}
             </div>
-            <div class="col-sm-4">
-              <label class="form-label fw-semibold">Duration (Weeks) <span class="text-danger">*</span></label>
-              {{ form.duration_weeks }}
+            <div class="col-sm-3">
+              <label class="form-label fw-semibold">Duration <span class="text-danger">*</span></label>
+              {{ form.duration }}
+              {% if form.duration.errors %}<div class="text-danger small">{{ form.duration.errors }}</div>{% endif %}
             </div>
-            <div class="col-sm-4">
-              <label class="form-label fw-semibold">Practical Lessons <span class="text-danger">*</span></label>
+            <div class="col-sm-3">
+              <label class="form-label fw-semibold">Practical Hours</label>
               {{ form.practical_hours }}
             </div>
+            <div class="col-sm-3">
+              <label class="form-label fw-semibold">Theory Hours</label>
+              {{ form.theory_hours }}
+            </div>
           </div>
 
           <div class="mb-3">
-            <label class="form-label fw-semibold">Course Summary / Overview <span class="text-danger">*</span></label>
-            {{ form.description }}
-            {% if form.description.errors %}<div class="text-danger small">{{ form.description.errors }}</div>{% endif %}
+            <label class="form-label fw-semibold">Short Summary / Teaser <span class="text-danger">*</span></label>
+            {{ form.short_description }}
+            {% if form.short_description.errors %}<div class="text-danger small">{{ form.short_description.errors }}</div>{% endif %}
           </div>
 
           <div class="mb-3">
-            <label class="form-label fw-semibold">Curriculum Outline / Topics</label>
-            {{ form.curriculum }}
+            <label class="form-label fw-semibold">Full Course Description</label>
+            {{ form.full_description }}
+            {% if form.full_description.errors %}<div class="text-danger small">{{ form.full_description.errors }}</div>{% endif %}
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Key Features / Modules</label>
+              {{ form.features }}
+              <div class="form-text">e.g. Dual-pedal cars, Model town board, Highway driving</div>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Entry Requirements</label>
+              {{ form.requirements }}
+              <div class="form-text">e.g. Min 18 yrs, National ID, Passport photos</div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Bootstrap Icon Class</label>
+              {{ form.icon_class }}
+              <div class="form-text">e.g. <code>bi-car-front</code>, <code>bi-truck</code>, <code>bi-bicycle</code></div>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Display Order</label>
+              {{ form.order }}
+            </div>
           </div>
 
           <div class="mb-3">
-            <label class="form-label fw-semibold">Entry Requirements (e.g. Min 18 yrs, ID Copy)</label>
-            {{ form.requirements }}
+            <label class="form-label fw-semibold">Branches Offering This Course</label>
+            <div class="p-3 bg-light rounded border">
+              {{ form.branches }}
+            </div>
+            <div class="form-text">Select the campus branches where this course is available.</div>
           </div>
 
           <div class="mb-3">
@@ -70,11 +119,7 @@
           </div>
 
           <div class="row g-3 mb-4">
-            <div class="col-sm-4">
-              <label class="form-label fw-semibold">Display Order</label>
-              {{ form.order }}
-            </div>
-            <div class="col-sm-4 d-flex align-items-center pt-3">
+            <div class="col-sm-6 d-flex align-items-center pt-2">
               <div class="form-check">
                 {{ form.is_active }}
                 <label class="form-check-label fw-semibold" for="{{ form.is_active.id_for_label }}">
@@ -82,11 +127,11 @@
                 </label>
               </div>
             </div>
-            <div class="col-sm-4 d-flex align-items-center pt-3">
+            <div class="col-sm-6 d-flex align-items-center pt-2">
               <div class="form-check">
-                {{ form.is_popular }}
-                <label class="form-check-label fw-semibold" for="{{ form.is_popular.id_for_label }}">
-                  Highlight as Popular
+                {{ form.is_featured }}
+                <label class="form-check-label fw-semibold" for="{{ form.is_featured.id_for_label }}">
+                  Feature on Homepage
                 </label>
               </div>
             </div>

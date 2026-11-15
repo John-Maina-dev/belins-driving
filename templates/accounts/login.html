@@ -1,0 +1,68 @@
+{% extends "base_public.html" %}
+
+{% block title %}Sign In - {{ site_settings.school_name|default:"Belings Driving School" }}{% endblock %}
+
+{% block content %}
+<div class="py-5" style="background-color: var(--body-bg); min-height: 75vh;">
+  <div class="container py-lg-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+          <div class="text-center mb-4">
+            {% if site_settings.logo_dark %}
+              <img src="{{ site_settings.logo_dark.url }}" alt="{{ site_settings.school_name }}" class="img-fluid mb-3" style="max-height: 60px;">
+            {% else %}
+              <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary bg-opacity-10 p-3 mb-3 text-primary">
+                <i class="bi bi-shield-lock fs-2"></i>
+              </div>
+            {% endif %}
+            <h3 class="fw-bold font-heading mb-1">Sign In</h3>
+            <p class="text-muted small">Enter your account credentials to access your portal</p>
+          </div>
+
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show small" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          <form method="post" action="{% url 'accounts:login' %}{% if next %}?next={{ next }}{% endif %}">
+            {% csrf_token %}
+
+            <div class="mb-3">
+              <label for="username" class="form-label fw-semibold small">Username or Email</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
+                <input type="text" name="username" id="username" class="form-control border-start-0" placeholder="e.g. your_username or email" required autofocus>
+              </div>
+            </div>
+
+            <div class="mb-2">
+              <div class="d-flex justify-content-between align-items-center">
+                <label for="password" class="form-label fw-semibold small mb-1">Password</label>
+                <a href="{% url 'accounts:password_reset' %}" class="small text-primary text-decoration-none">Forgot Password?</a>
+              </div>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
+                <input type="password" name="password" id="password" class="form-control border-start-0" placeholder="••••••••" required>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-brand-primary w-100 py-2 fw-semibold mt-3">
+              <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+            </button>
+          </form>
+
+          <div class="text-center mt-4 pt-3 border-top">
+            <span class="text-muted small">Don't have an account yet?</span>
+            <a href="{% url 'accounts:register' %}" class="fw-semibold text-primary ms-1 small">Create Account</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

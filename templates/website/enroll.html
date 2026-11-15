@@ -11,12 +11,7 @@
       <div class="col-md-8">
         <span class="badge bg-warning text-dark px-3 py-1 mb-2 font-monospace">ONLINE REGISTRATION</span>
         <h1 class="display-5 fw-bold text-white mb-2">Student Enrollment Form</h1>
-        <p class="lead mb-0 text-white-50">Begin your journey to acquiring a valid Kenyan NTSA Smart Driving License.</p>
-      </div>
-      <div class="col-md-4 text-md-end mt-3 mt-md-0">
-        <span class="badge bg-white text-primary p-2 fs-6 shadow-sm">
-          <i class="bi bi-clock-history me-1"></i> Intakes Open Every Monday
-        </span>
+        <p class="lead mb-0 text-white-50">Submit your application for driver training admission.</p>
       </div>
     </div>
   </div>
@@ -28,10 +23,16 @@
     <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5 bg-white border">
       <div class="text-center mb-4 pb-2 border-bottom">
         <h3 class="font-heading text-primary mb-1">Driver Trainee Application</h3>
-        <p class="text-muted small">Please complete the required details accurately. Your submission will create a pending student profile for verification.</p>
+        <p class="text-muted small">Please complete the required details accurately. Applicants must be 18 years or older.</p>
       </div>
 
-      <form method="post" action="{% url 'website:enroll' %}">
+      {% if form.non_field_errors %}
+      <div class="alert alert-danger">
+        {{ form.non_field_errors }}
+      </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'website:enroll' %}" novalidate>
         {% csrf_token %}
 
         <!-- Personal Information Section -->
@@ -42,64 +43,63 @@
           <div class="col-md-6">
             <label class="form-label small fw-bold">First Name <span class="text-danger">*</span></label>
             {{ form.first_name }}
-            {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors }}</div>{% endif %}
+            {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors|striptags }}</div>{% endif %}
           </div>
           <div class="col-md-6">
             <label class="form-label small fw-bold">Last Name <span class="text-danger">*</span></label>
             {{ form.last_name }}
-            {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors }}</div>{% endif %}
+            {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors|striptags }}</div>{% endif %}
           </div>
           <div class="col-md-6">
             <label class="form-label small fw-bold">Email Address <span class="text-danger">*</span></label>
             {{ form.email }}
-            {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors }}</div>{% endif %}
+            {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors|striptags }}</div>{% endif %}
           </div>
           <div class="col-md-6">
-            <label class="form-label small fw-bold">Phone Number (M-Pesa registered) <span class="text-danger">*</span></label>
+            <label class="form-label small fw-bold">Phone Number <span class="text-danger">*</span></label>
             {{ form.phone }}
-            {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors }}</div>{% endif %}
+            {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors|striptags }}</div>{% endif %}
           </div>
           <div class="col-md-4">
             <label class="form-label small fw-bold">National ID / Passport No. <span class="text-danger">*</span></label>
             {{ form.id_number }}
-            {% if form.id_number.errors %}<div class="text-danger small mt-1">{{ form.id_number.errors }}</div>{% endif %}
+            {% if form.id_number.errors %}<div class="text-danger small mt-1">{{ form.id_number.errors|striptags }}</div>{% endif %}
           </div>
           <div class="col-md-4">
-            <label class="form-label small fw-bold">Date of Birth</label>
+            <label class="form-label small fw-bold">Date of Birth (18+ Only) <span class="text-danger">*</span></label>
             {{ form.date_of_birth }}
-            {% if form.date_of_birth.errors %}<div class="text-danger small mt-1">{{ form.date_of_birth.errors }}</div>{% endif %}
+            {% if form.date_of_birth.errors %}<div class="text-danger small mt-1">{{ form.date_of_birth.errors|striptags }}</div>{% endif %}
           </div>
           <div class="col-md-4">
             <label class="form-label small fw-bold">Gender</label>
             {{ form.gender }}
-            {% if form.gender.errors %}<div class="text-danger small mt-1">{{ form.gender.errors }}</div>{% endif %}
+            {% if form.gender.errors %}<div class="text-danger small mt-1">{{ form.gender.errors|striptags }}</div>{% endif %}
           </div>
         </div>
 
-        <!-- Course & Scheduling Preferences -->
+        <!-- Branch, Course & Scheduling Preferences -->
         <h5 class="fw-bold text-primary mb-3 pb-2 border-bottom">
-          <i class="bi bi-car-front-fill text-warning me-1"></i> 2. Course & Schedule Selection
+          <i class="bi bi-car-front-fill text-warning me-1"></i> 2. Branch, Course & Schedule Selection
         </h5>
         <div class="row g-3 mb-4">
-          <div class="col-12">
-            <label class="form-label small fw-bold">Select Driving Course / Category <span class="text-danger">*</span></label>
+          <div class="col-md-6">
+            <label class="form-label small fw-bold" for="id_branch">Select Branch <span class="text-danger">*</span></label>
+            {{ form.branch }}
+            {% if form.branch.errors %}<div class="text-danger small mt-1">{{ form.branch.errors|striptags }}</div>{% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-bold" for="id_course">Select Driving Course / Category <span class="text-danger">*</span></label>
             {{ form.course }}
-            {% if form.course.errors %}<div class="text-danger small mt-1">{{ form.course.errors }}</div>{% endif %}
+            {% if form.course.errors %}<div class="text-danger small mt-1">{{ form.course.errors|striptags }}</div>{% endif %}
           </div>
           <div class="col-md-6">
             <label class="form-label small fw-bold">Preferred Shift / Timing</label>
             {{ form.preferred_schedule }}
-            {% if form.preferred_schedule.errors %}<div class="text-danger small mt-1">{{ form.preferred_schedule.errors }}</div>{% endif %}
-          </div>
-          <div class="col-md-6">
-            <label class="form-label small fw-bold">Preferred Training Branch</label>
-            {{ form.preferred_branch }}
-            {% if form.preferred_branch.errors %}<div class="text-danger small mt-1">{{ form.preferred_branch.errors }}</div>{% endif %}
+            {% if form.preferred_schedule.errors %}<div class="text-danger small mt-1">{{ form.preferred_schedule.errors|striptags }}</div>{% endif %}
           </div>
           <div class="col-12">
             <label class="form-label small fw-bold">Notes or Prior Driving Experience</label>
             {{ form.notes }}
-            <small class="text-muted">Mention if you already have prior experience, require refresher lessons, or have schedule constraints.</small>
           </div>
         </div>
 
@@ -108,7 +108,7 @@
           <div class="form-check">
             <input class="form-check-input" type="checkbox" value="1" id="termsAgree" required checked>
             <label class="form-check-label small text-secondary" for="termsAgree">
-              I certify that all details submitted are accurate and that I meet the age and medical eligibility criteria required under Kenyan traffic regulations and NTSA standards.
+              I certify that all details submitted are accurate and that I am at least 18 years of age.
             </label>
           </div>
         </div>
@@ -122,3 +122,33 @@
 </section>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+  (function() {
+    const branchSelect = document.getElementById('id_branch');
+    const courseSelect = document.getElementById('id_course');
+    if (!branchSelect || !courseSelect) return;
+
+    branchSelect.addEventListener('change', function() {
+      const branchId = this.value;
+      const currentCourse = courseSelect.value;
+      const url = "{% url 'website:branch_courses_api' %}" + (branchId ? ("?branch_id=" + encodeURIComponent(branchId)) : "");
+      fetch(url)
+        .then(r => r.json())
+        .then(data => {
+          courseSelect.innerHTML = '<option value="">-- Select Driving Course / Category --</option>';
+          (data.courses || []).forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.name + ' (KES ' + Number(c.fee).toLocaleString() + ')';
+            if (String(c.id) === String(currentCourse)) {
+              opt.selected = true;
+            }
+            courseSelect.appendChild(opt);
+          });
+        })
+        .catch(() => {});
+    });
+  })();
+</script>
+{% endblock %}

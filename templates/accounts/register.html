@@ -1,0 +1,99 @@
+{% extends "base_public.html" %}
+
+{% block title %}Student Registration - {{ site_settings.school_name|default:"Belings Driving School" }}{% endblock %}
+
+{% block content %}
+<div class="py-5" style="background-color: var(--body-bg); min-height: 80vh;">
+  <div class="container py-lg-4">
+    <div class="row justify-content-center">
+      <div class="col-md-7 col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+          <div class="text-center mb-4">
+            <h3 class="fw-bold font-heading mb-1">Create Student Account</h3>
+            <p class="text-muted small">Register to begin your driver training journey (Age 18+ Required)</p>
+          </div>
+
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show small" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          <form method="post" action="{% url 'accounts:register' %}">
+            {% csrf_token %}
+
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <label for="first_name" class="form-label fw-semibold small">First Name <span class="text-danger">*</span></label>
+                <input type="text" name="first_name" id="first_name" class="form-control" placeholder="First Name" value="{{ form_data.first_name|default:'' }}" required>
+              </div>
+              <div class="col-sm-6">
+                <label for="last_name" class="form-label fw-semibold small">Last Name <span class="text-danger">*</span></label>
+                <input type="text" name="last_name" id="last_name" class="form-control" placeholder="Last Name" value="{{ form_data.last_name|default:'' }}" required>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <label for="email" class="form-label fw-semibold small">Email Address <span class="text-danger">*</span></label>
+                <input type="email" name="email" id="email" class="form-control" placeholder="name@example.com" value="{{ form_data.email|default:'' }}" required>
+              </div>
+              <div class="col-sm-6">
+                <label for="phone" class="form-label fw-semibold small">Phone Number</label>
+                <input type="tel" name="phone" id="phone" class="form-control" placeholder="0712 345 678" value="{{ form_data.phone|default:'' }}">
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <label for="date_of_birth" class="form-label fw-semibold small">Date of Birth <span class="text-danger">*</span></label>
+                <input type="date" name="date_of_birth" id="date_of_birth" class="form-control" {% if max_dob %}max="{{ max_dob }}"{% endif %} value="{{ form_data.date_of_birth|default:'' }}" required>
+                <div class="form-text small">Must be 18 years or older</div>
+              </div>
+              {% if branches %}
+              <div class="col-sm-6">
+                <label for="branch" class="form-label fw-semibold small">Preferred Campus Branch</label>
+                <select name="branch" id="branch" class="form-select">
+                  <option value="">-- Select Campus Branch --</option>
+                  {% for b in branches %}
+                    <option value="{{ b.id }}" {% if form_data.branch == b.id|stringformat:"s" %}selected{% endif %}>{{ b.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              {% endif %}
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-sm-6">
+                <label for="password" class="form-label fw-semibold small">Password <span class="text-danger">*</span></label>
+                <input type="password" name="password" id="password" class="form-control" placeholder="Minimum 6 characters" required>
+              </div>
+              <div class="col-sm-6">
+                <label for="confirm_password" class="form-label fw-semibold small">Confirm Password <span class="text-danger">*</span></label>
+                <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="Repeat password" required>
+              </div>
+            </div>
+
+            <div class="p-3 bg-light rounded-3 small mb-4 text-muted border-start border-3 border-warning">
+              <i class="bi bi-info-circle me-1 text-warning"></i>
+              New student accounts are reviewed and approved by school administration prior to course scheduling and fee payments.
+            </div>
+
+            <button type="submit" class="btn btn-brand-primary w-100 py-2 fw-semibold">
+              <i class="bi bi-person-plus me-1"></i> Register Account
+            </button>
+          </form>
+
+          <div class="text-center mt-4 pt-3 border-top">
+            <span class="text-muted small">Already have an account?</span>
+            <a href="{% url 'accounts:login' %}" class="fw-semibold text-primary ms-1 small">Sign In</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

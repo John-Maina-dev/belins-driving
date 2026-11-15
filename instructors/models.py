@@ -4,6 +4,7 @@ from website.models import safe_upload_path, validate_image_file
 class Instructor(models.Model):
     full_name = models.CharField(max_length=150)
     title = models.CharField(max_length=150, help_text="e.g. Chief Driving Instructor / Defensive Driving Specialist")
+    branch = models.ForeignKey('courses.Branch', on_delete=models.SET_NULL, null=True, blank=True, related_name='instructors', help_text="Stationed campus branch")
     license_categories = models.CharField(max_length=100, default="Category A, B & C", help_text="Categories certified to teach")
     experience_years = models.PositiveIntegerField(default=5, help_text="Years of driving instruction experience")
     bio = models.TextField(help_text="Professional background and qualifications")

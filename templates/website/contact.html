@@ -10,15 +10,17 @@
     <div class="row align-items-center">
       <div class="col-md-8">
         <span class="badge bg-warning text-dark px-3 py-1 mb-2 font-monospace">GET IN TOUCH</span>
-        <h1 class="display-5 fw-bold text-white mb-2">Contact Belings Driving School</h1>
+        <h1 class="display-5 fw-bold text-white mb-2">Contact {{ site_settings.school_name|default:"Belings Driving School" }}</h1>
         <p class="lead mb-0 text-white-50">We are here to answer your questions and assist with registration.</p>
       </div>
+      {% if site_settings.whatsapp_number and site_settings.whatsapp_enabled %}
       <div class="col-md-4 text-md-end mt-3 mt-md-0">
-        <a href="https://wa.me/{{ site_settings.whatsapp_number|default:'254700123456' }}?text=Hello%20Belings%20Driving%20School,%20I%20would%20like%20to%20inquire%20about%20courses."
-           class="btn btn-whatsapp btn-lg text-white" target="_blank" rel="noopener">
+        <a href="https://wa.me/{{ site_settings.whatsapp_number }}"
+           class="btn btn-whatsapp btn-lg text-white" target="_blank" rel="noopener noreferrer">
           <i class="bi bi-whatsapp"></i> Chat on WhatsApp
         </a>
       </div>
+      {% endif %}
     </div>
   </div>
 </div>
@@ -27,25 +29,24 @@
 <section class="py-5 bg-white">
   <div class="container py-lg-4">
     <div class="row g-5">
-      <!-- Contact Details & Quick Links -->
+      <!-- Contact Details & Branches -->
       <div class="col-lg-5">
         <span class="section-tag">Reach Out To Us</span>
-        <h2 class="section-title mb-4">We are Always Ready to Help</h2>
-        <p class="text-secondary mb-4" style="line-height: 1.8;">
-          Whether you want to inquire about license classes, payment options, or corporate defensive driving packages, our customer care officers will respond promptly.
-        </p>
+        <h2 class="section-title mb-4">Contact Details</h2>
 
-        <!-- Information Cards -->
+        {% if site_settings.address %}
         <div class="d-flex align-items-start gap-3 p-3 bg-light rounded-4 mb-3 border">
           <div class="course-icon-badge" style="width: 48px; height: 48px; font-size: 1.25rem;">
             <i class="bi bi-geo-alt-fill"></i>
           </div>
           <div>
             <h6 class="fw-bold mb-1 text-primary">Main Campus & Head Office</h6>
-            <p class="small text-muted mb-0">{{ site_settings.address|default:"Belings Towers, 3rd Floor, Moi Avenue / Commercial Street, Nairobi, Kenya" }}</p>
+            <p class="small text-muted mb-0">{{ site_settings.address }}</p>
           </div>
         </div>
+        {% endif %}
 
+        {% if site_settings.phone %}
         <div class="d-flex align-items-start gap-3 p-3 bg-light rounded-4 mb-3 border">
           <div class="course-icon-badge" style="width: 48px; height: 48px; font-size: 1.25rem;">
             <i class="bi bi-telephone-fill"></i>
@@ -53,14 +54,16 @@
           <div>
             <h6 class="fw-bold mb-1 text-primary">Phone & Helpline</h6>
             <p class="small text-muted mb-0">
-              <a href="tel:{{ site_settings.phone|default:'+254700123456' }}" class="text-dark fw-semibold">{{ site_settings.phone|default:'+254 700 123 456' }}</a>
+              <a href="tel:{{ site_settings.phone }}" class="text-dark fw-semibold">{{ site_settings.phone }}</a>
               {% if site_settings.phone_secondary %}
               <br><a href="tel:{{ site_settings.phone_secondary }}" class="text-dark">{{ site_settings.phone_secondary }}</a>
               {% endif %}
             </p>
           </div>
         </div>
+        {% endif %}
 
+        {% if site_settings.email %}
         <div class="d-flex align-items-start gap-3 p-3 bg-light rounded-4 mb-3 border">
           <div class="course-icon-badge" style="width: 48px; height: 48px; font-size: 1.25rem;">
             <i class="bi bi-envelope-fill"></i>
@@ -68,37 +71,53 @@
           <div>
             <h6 class="fw-bold mb-1 text-primary">Email Inquiries</h6>
             <p class="small text-muted mb-0">
-              <a href="mailto:{{ site_settings.email|default:'info@belingsdriving.co.ke' }}" class="text-dark">{{ site_settings.email|default:'info@belingsdriving.co.ke' }}</a>
+              <a href="mailto:{{ site_settings.email }}" class="text-dark">{{ site_settings.email }}</a>
             </p>
           </div>
         </div>
+        {% endif %}
 
+        {% if site_settings.opening_hours %}
         <div class="d-flex align-items-start gap-3 p-3 bg-light rounded-4 mb-4 border">
           <div class="course-icon-badge" style="width: 48px; height: 48px; font-size: 1.25rem;">
             <i class="bi bi-clock-fill"></i>
           </div>
           <div>
             <h6 class="fw-bold mb-1 text-primary">Working Hours</h6>
-            <p class="small text-muted mb-0">{{ site_settings.opening_hours|default:"Monday - Friday: 7:00 AM - 6:30 PM | Saturday: 8:00 AM - 4:00 PM | Sunday: Closed" }}</p>
+            <p class="small text-muted mb-0">{{ site_settings.opening_hours }}</p>
           </div>
         </div>
+        {% endif %}
 
-        <div class="p-3 bg-success-subtle text-success border border-success rounded-4 d-flex align-items-center justify-content-between">
-          <div>
-            <div class="fw-bold"><i class="bi bi-whatsapp me-1"></i> WhatsApp Instant Support</div>
-            <div class="small text-muted">Direct replies during business hours</div>
+        {% if branches %}
+        <h5 class="font-heading text-primary mt-4 mb-3">Our Active Branches</h5>
+        {% for branch in branches %}
+        <div class="p-3 bg-light rounded-4 mb-3 border">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <h6 class="fw-bold text-primary mb-0">{{ branch.name }}</h6>
+            <span class="badge bg-white text-dark border small">{{ branch.code }}</span>
           </div>
-          <a href="https://wa.me/{{ site_settings.whatsapp_number|default:'254700123456' }}" class="btn btn-success btn-sm fw-bold" target="_blank" rel="noopener">
-            Chat Now
-          </a>
+          {% if branch.town %}<div class="small fw-semibold text-secondary">{{ branch.town }}</div>{% endif %}
+          {% if branch.address %}<div class="small text-muted"><i class="bi bi-geo-alt me-1"></i>{{ branch.address }}</div>{% endif %}
+          {% if branch.phone %}<div class="small text-muted"><i class="bi bi-telephone me-1"></i><a href="tel:{{ branch.phone }}">{{ branch.phone }}</a></div>{% endif %}
+          {% if branch.email %}<div class="small text-muted"><i class="bi bi-envelope me-1"></i><a href="mailto:{{ branch.email }}">{{ branch.email }}</a></div>{% endif %}
+          {% if branch.opening_hours %}<div class="small text-muted"><i class="bi bi-clock me-1"></i>{{ branch.opening_hours }}</div>{% endif %}
+          <div class="mt-2 d-flex gap-2">
+            <a href="{% url 'website:enroll' %}?branch={{ branch.id }}" class="btn btn-sm btn-brand-secondary">Enroll Here</a>
+            {% if branch.has_map %}
+            <a href="#map-{{ branch.code|slugify }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-map me-1"></i>View map</a>
+            {% endif %}
+          </div>
         </div>
+        {% endfor %}
+        {% endif %}
       </div>
 
       <!-- Contact Form -->
       <div class="col-lg-7">
         <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5 bg-white border">
           <h4 class="font-heading text-primary mb-2">Send Us a Direct Message</h4>
-          <p class="text-muted small mb-4">Fill out the form below and an admissions officer will get in touch shortly.</p>
+          <p class="text-muted small mb-4">Fill out the form below and our team will get in touch shortly.</p>
 
           <form method="post" action="{% url 'website:contact' %}">
             {% csrf_token %}
@@ -145,35 +164,22 @@
   </div>
 </section>
 
-<!-- Embedded Map Section -->
-<section class="py-5" style="background-color: var(--body-bg);">
+{% if map_branches %}
+<!-- Branch Maps: one per active branch that has map data (nothing is shown otherwise) -->
+<section class="py-5" id="branch-maps" style="background-color: var(--body-bg);">
   <div class="container">
-    <div class="section-header mb-4">
-      <span class="section-tag">Locate Our Campus</span>
-      <h3 class="section-title">Visit Our Training Grounds</h3>
-      <p class="section-desc">Conveniently located with accessible public transport links and spacious model town board driving grounds.</p>
+    <div class="text-center mb-4">
+      <h2 class="font-heading text-primary h3 mb-1">Find Us</h2>
+      <p class="text-muted small mb-0">Visit a branch near you.</p>
     </div>
-
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-      {% if site_settings.map_embed_url %}
-      <iframe src="{{ site_settings.map_embed_url }}"
-              width="100%"
-              height="420"
-              style="border:0;"
-              allowfullscreen=""
-              loading="lazy"
-              referrerpolicy="no-referrer-when-downgrade"
-              title="Belings Driving School Location Map">
-      </iframe>
-      {% else %}
-      <div class="bg-light p-5 text-center text-muted" style="min-height: 350px;">
-        <i class="bi bi-geo-alt display-2 text-primary mb-3 d-block"></i>
-        <h5>Belings Driving School Training Grounds</h5>
-        <p>{{ site_settings.address|default:"Belings Towers, Moi Avenue / Commercial Street, Nairobi, Kenya" }}</p>
+    <div class="row g-4 justify-content-center">
+      {% for branch in map_branches %}
+      <div class="{% if map_branches|length == 1 %}col-lg-10{% else %}col-lg-6{% endif %}">
+        {% include 'website/_branch_map.html' %}
       </div>
-      {% endif %}
+      {% endfor %}
     </div>
   </div>
 </section>
+{% endif %}
 {% endblock %}
-

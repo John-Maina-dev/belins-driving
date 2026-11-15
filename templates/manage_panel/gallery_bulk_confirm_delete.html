@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm Bulk Photo Deletion - Site Management{% endblock %}
+{% block page_title %}Confirm Bulk Gallery Deletion{% endblock %}
+{% block page_subtitle %}Permanently remove selected photos and all generated WebP variants from disk{% endblock %}
+
+{% block content %}
+<div class="content-card" style="max-width: 780px;">
+  <div class="alert alert-danger border-0 shadow-sm mb-4">
+    <h5 class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Delete {{ count }} Selected Gallery Photo{{ count|pluralize }}?</h5>
+    <p class="small mb-0">
+      This action will permanently delete the {{ count }} selected database record{{ count|pluralize }} and remove the original file plus both <code>grid</code> (800px) and <code>large</code> (1600px) variants from disk.
+    </p>
+  </div>
+
+  <div class="row g-2 mb-4">
+    {% for img in images_to_delete %}
+    <div class="col-6 col-sm-4 col-md-3">
+      <div class="border rounded p-2 text-center bg-light">
+        <img src="{{ img.grid_url }}" alt="{{ img.title }}" class="rounded mb-1" style="width: 100%; height: 90px; object-fit: cover;">
+        <div class="small fw-semibold text-truncate">{{ img.title }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <form method="post" action="{% url 'manage:gallery_bulk_action' %}">
+    {% csrf_token %}
+    <input type="hidden" name="bulk_action" value="delete_selected">
+    <input type="hidden" name="confirmed" value="yes">
+    {% for sid in selected_ids %}
+    <input type="hidden" name="selected_ids" value="{{ sid }}">
+    {% endfor %}
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-danger fw-bold px-4">
+        <i class="bi bi-trash3-fill me-1"></i>Yes, Delete {{ count }} Photo{{ count|pluralize }}
+      </button>
+      <a href="{% url 'manage:gallery_list' %}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+

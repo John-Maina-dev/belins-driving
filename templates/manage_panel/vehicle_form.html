@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Site Management{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="content-card" style="max-width: 720px;">
+  <form method="post">
+    {% csrf_token %}
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">Registration Plate <span class="text-danger">*</span></label>
+        {{ form.plate_number }}
+        {% if form.plate_number.errors %}<div class="text-danger small">{{ form.plate_number.errors|striptags }}</div>{% endif %}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">Make & Model <span class="text-danger">*</span></label>
+        {{ form.make_model }}
+        {% if form.make_model.errors %}<div class="text-danger small">{{ form.make_model.errors|striptags }}</div>{% endif %}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">License Category</label>
+        {{ form.license_category }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Transmission</label>
+        {{ form.transmission }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Assigned Branch</label>
+        {{ form.branch }}
+      </div>
+      <div class="col-12">
+        <div class="form-check">
+          {{ form.is_active }}
+          <label class="form-check-label fw-semibold">Active for Lesson Bookings</label>
+        </div>
+      </div>
+    </div>
+    <div class="mt-4 d-flex gap-2">
+      <button type="submit" class="btn btn-primary fw-bold px-4">Save Vehicle</button>
+      <a href="{% url 'manage:vehicles_list' %}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+

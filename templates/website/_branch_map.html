@@ -1,0 +1,36 @@
+{# Public branch map: hidden completely when the branch has no map data. Never renders raw admin HTML. #}
+{% if branch.has_map %}
+<article class="branch-map-card card border-0 shadow-sm rounded-4 overflow-hidden h-100" id="map-{{ branch.code|slugify }}">
+  <div class="branch-map-frame">
+    <iframe src="{{ branch.map_src }}"
+            title="Map showing the location of {{ branch.name }}{% if branch.address %}, {{ branch.address }}{% endif %}"
+            width="100%" height="100%"
+            style="border:0;"
+            allowfullscreen
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"></iframe>
+  </div>
+  <div class="p-4">
+    <h5 class="font-heading text-primary mb-3">{{ branch.name }}</h5>
+    <ul class="list-unstyled small text-muted mb-3">
+      {% if branch.address %}<li class="mb-1"><i class="bi bi-geo-alt me-2"></i>{{ branch.address }}</li>{% endif %}
+      {% if branch.phone %}<li class="mb-1"><i class="bi bi-telephone me-2"></i><a href="tel:{{ branch.phone }}">{{ branch.phone }}</a></li>{% endif %}
+      {% if branch.email %}<li class="mb-1"><i class="bi bi-envelope me-2"></i><a href="mailto:{{ branch.email }}">{{ branch.email }}</a></li>{% endif %}
+      {% if branch.opening_hours %}<li class="mb-1"><i class="bi bi-clock me-2"></i>{{ branch.opening_hours }}</li>{% endif %}
+    </ul>
+    <div class="d-flex flex-wrap gap-2">
+      {% if branch.maps_open_url %}
+      <a href="{{ branch.maps_open_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-brand-primary btn-sm fw-bold">
+        <i class="bi bi-box-arrow-up-right me-1"></i> Open in Google Maps
+      </a>
+      {% endif %}
+      {% if branch.directions_url %}
+      <a href="{{ branch.directions_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary btn-sm fw-bold">
+        <i class="bi bi-signpost-split me-1"></i> Get directions
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</article>
+{% endif %}
+
